@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNK48 Survival Quiz | เกมแฟนพันธุ์แท้ (Fan-made)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #0f0f11; color: #f8fafc; overflow: hidden; }
+        .font-cute { font-family: 'Mali', cursive; }
+        
+        /* ธีมสีพื้นหลัง (Stage Themes) */
+        .bg-animated { background-size: 400% 400%; animation: gradientBG 15s ease infinite; transition: background 0.6s ease; }
+        .theme-default { background-image: linear-gradient(-45deg, #be123c, #881337, #4c0519, #000000); }
+        .theme-pastel { background-image: linear-gradient(-45deg, #c084fc, #f472b6, #7e22ce, #3b0764); }
+        .theme-mint { background-image: linear-gradient(-45deg, #10b981, #0d9488, #065f46, #022c22); }
+        .theme-neon { background-image: linear-gradient(-45deg, #2563eb, #7c3aed, #db2777, #090d16); }
+        
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .btn-option { transition: all 0.2s ease; }
+        .btn-option:active { transform: scale(0.95); }
+        .correct { background-color: #16a34a !important; border-color: #15803d !important; color: white !important; }
+        .wrong { background-color: #dc2626 !important; border-color: #b91c1c !important; color: white !important; }
+        .screen { display: none !important; animation: fadeIn 0.4s ease-out forwards; }
+        .screen.active { display: flex !important; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card-ssr { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); box-shadow: 0 0 20px #fbbf24, inset 0 0 10px rgba(255,255,255,0.5); border: 2px solid #fef3c7; color: #78350f; animation: pulseGlow 2s infinite; }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 15px #fbbf24; } 50% { box-shadow: 0 0 30px #f59e0b; } 100% { box-shadow: 0 0 15px #fbbf24; } }
+        
+        /* กรอบรูปโปรไฟล์ (Avatar Frames) */
+        .frame-default { border: 4px solid #1f2937; box-shadow: 0 0 25px rgba(225,29,72,0.5); }
+        .frame-gold { border: 4px solid #fde047; box-shadow: 0 0 20px #eab308, 0 0 35px #ca8a04, inset 0 0 10px #fef08a; animation: pulseGold 2s infinite; }
+        @keyframes pulseGold { 0%, 100% { box-shadow: 0 0 15px #eab308, 0 0 30px #ca8a04; } 50% { box-shadow: 0 0 25px #fde047, 0 0 45px #eab308; } }
+        .frame-neon { border: 4px solid #22d3ee; box-shadow: 0 0 15px #06b6d4, 0 0 30px #3b82f6, inset 0 0 10px #67e8f9; animation: pulseNeon 1.8s infinite; }
+        @keyframes pulseNeon { 0%, 100% { box-shadow: 0 0 12px #06b6d4, 0 0 25px #3b82f6; } 50% { box-shadow: 0 0 24px #67e8f9, 0 0 40px #2563eb; } }
+        .frame-rainbow { border: 4px solid transparent; background: linear-gradient(#374151, #374151) padding-box, linear-gradient(45deg, #f43f5e, #fbbf24, #10b981, #3b82f6, #a855f7, #f43f5e) border-box; box-shadow: 0 0 25px rgba(236,72,153,0.7); }
+
+        .gacha-shake { animation: shake 0.5s ease-in-out infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg) scale(1.1); } 50% { transform: rotate(0deg) scale(1.1); } 75% { transform: rotate(-5deg) scale(1.1); } 100% { transform: rotate(0deg); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(225, 29, 72, 0.5); border-radius: 10px; }
+        #timer-bar { transition: width 0.1s linear; }
+        @keyframes comboPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .combo-pop { animation: comboPop 0.35s ease-out; }
+    </style>
+</head>
+<body id="app-body" class="bg-animated theme-default h-screen w-screen flex items-center justify-center p-4">
+
+    <!-- Popup ประกาศเกมแฟนเมด -->
+    <div id="disclaimer-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm max-h-[90vh] overflow-y-auto custom-scrollbar bg-gray-900 border border-rose-500/50 rounded-3xl shadow-2xl p-6 text-center">
+            <div class="text-4xl mb-2">📢</div>
+            <h2 class="text-xl font-bold text-rose-400 font-cute mb-1">ประกาศก่อนเล่น</h2>
+            <span class="inline-block text-[10px] font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-3 py-0.5 rounded-full mb-4">FAN-MADE • เกมแฟนเมด</span>
+            <p class="text-sm text-gray-200 leading-relaxed mb-3">เกมนี้เป็น <b class="text-white">เกมแฟนเมด</b> จัดทำขึ้นเพื่อ <b class="text-white">ทดสอบความเป็นแฟนพันธุ์แท้ BNK48 ในตัวคุณ</b> เท่านั้น</p>
+            <ul class="text-xs text-gray-400 leading-relaxed text-left space-y-2 mb-5 list-disc pl-5">
+                <li>ไม่ใช่เกมอย่างเป็นทางการ และไม่ได้เกี่ยวข้องหรือได้รับการรับรองจาก BNK48 หรือต้นสังกัด</li>
+                <li>ชื่อ ภาพ และเครื่องหมายที่เกี่ยวข้อง เป็นสิทธิ์ของเจ้าของสิทธิ์</li>
+                <li>จัดทำขึ้นเพื่อความบันเทิงของแฟนคลับ ไม่ได้จัดทำเพื่อการค้า</li>
+                <li>เนื้อหาในคำถามอาจคลาดเคลื่อนได้ หากพบข้อผิดพลาดขออภัยมา ณ ที่นี้</li>
+                <li>ไอเทม เงิน และการสุ่มกาชาในเกมเป็นของสมมติ ไม่มีมูลค่าจริง</li>
+            </ul>
+            <button onclick="closeDisclaimer()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-2xl shadow-lg transition active:scale-95">รับทราบ ไปเล่นกันเลย!</button>
+        </div>
+    </div>
+
+    <!-- Popup ยืนยันการสุ่มทั้งหมดที่มี -->
+    <div id="confirm-all-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-xs bg-gray-900 border border-yellow-500/50 rounded-3xl shadow-2xl p-6 text-center">
+            <div class="text-4xl mb-3">⚠️</div>
+            <h2 class="text-lg font-bold text-yellow-400 font-cute mb-2">ยืนยันการเหมาตู้กาชา?</h2>
+            <p id="confirm-all-desc" class="text-xs text-gray-300 leading-relaxed mb-6">คุณต้องการใช้เงินเพื่อสุ่มทั้งหมดหรือไม่?</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeConfirmAllModal()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition active:scale-95 text-sm">ยกเลิก</button>
+                <button onclick="executePullAll()" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-xl shadow-lg transition active:scale-95 text-sm">ยืนยันสุ่มเลย!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- หน้าต่างตั้งค่า -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-xs bg-gray-900 border border-gray-700 rounded-3xl shadow-2xl p-6">
+            <h2 class="text-lg font-bold text-white mb-1 text-center font-cute">⚙️ ตั้งค่า</h2>
+            <p id="settings-pause-note" class="text-[10px] text-gray-500 text-center mb-4">เวลาในเกมจะหยุดระหว่างเปิดหน้านี้</p>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-200">🎵 เพลงพื้นหลัง</span>
+                <button id="set-music" onclick="toggleMusic()"></button>
+            </div>
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-xs text-gray-400">ระดับเสียง</span>
+                <input id="music-volume" type="range" min="0" max="100" step="5" value="40" oninput="setMusicVolume(this.value)" class="flex-1 accent-rose-500">
+                <span id="music-volume-label" class="text-xs text-gray-300 w-7 text-right">40</span>
+            </div>
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-sm text-gray-200">🔊 เสียงเอฟเฟกต์</span>
+                <button id="set-sound" onclick="toggleSound()"></button>
+            </div>
+            <div class="flex items-center justify-between mb-5">
+                <span class="text-sm text-gray-200">📳 การสั่น</span>
+                <button id="set-vibrate" onclick="toggleVibrate()"></button>
+            </div>
+            <button onclick="closeSettings()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-2xl transition active:scale-95">เสร็จสิ้น</button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md bg-gray-900/80 backdrop-blur-md border border-gray-700/50 rounded-3xl shadow-2xl overflow-hidden h-[750px] max-h-[90vh] relative flex flex-col">
+        
+        <!-- Screen 1: หน้าแรก -->
+        <div id="start-screen" class="screen active h-full p-6 relative z-10 flex flex-col items-center justify-center">
+            <div class="absolute top-4 right-4 z-20"><button onclick="showSettings()" title="ตั้งค่า" class="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 text-base">⚙️</button></div>
+            
+            <div id="start-avatar-frame" class="w-24 h-24 rounded-full mb-3 relative frame-default flex items-center justify-center bg-gray-700 overflow-visible transition-all">
+                <img id="active-oshi-img" src="" class="w-full h-full object-cover rounded-full hidden">
+                <i id="active-oshi-icon" data-lucide="gamepad-2" class="w-10 h-10 text-white"></i>
+                <div id="active-oshi-badge" class="absolute -bottom-3 bg-purple-600 text-white text-[11px] font-bold px-4 py-1 rounded-full border-2 border-gray-900 shadow-md">เด็กฝึก</div>
+            </div>
+            
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-500 mb-0.5 mt-2 font-cute">BNK48 QUIZ</h1>
+            <div id="start-title-badge" class="text-[11px] font-bold text-purple-300 mb-1">ฉายา: แฟนคลับหน้าใหม่</div>
+            <span class="text-[9px] font-bold text-rose-300 bg-rose-500/20 border border-rose-500/40 px-2.5 py-0.5 rounded-full">FAN-MADE • เกมแฟนเมด</span>
+            
+            <div class="flex items-center gap-2 mb-4 mt-2">
+                <span class="text-xs text-gray-400">ไอเทม:</span>
+                <div id="active-equip-display" class="flex gap-2">
+                    <span class="text-xs bg-gray-800 text-gray-500 px-2 py-0.5 rounded border border-gray-700">ว่าง</span>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800/80 border border-yellow-500/30 rounded-2xl p-3.5 w-full flex justify-between items-center shadow-inner mb-4">
+                <div class="flex flex-col">
+                    <span class="text-xs text-yellow-100/70">เงินทุนของคุณ (🌟)</span>
+                </div>
+                <div class="flex flex-col text-right">
+                    <span id="money-display" class="text-2xl font-bold text-yellow-400 flex items-center gap-1 justify-end">0 <i data-lucide="sparkles" class="w-5 h-5"></i></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 w-full flex-1 content-start">
+                <button id="btn-start" disabled onclick="startGame()" class="col-span-2 bg-gray-700 text-gray-400 font-bold py-3.5 rounded-2xl shadow-lg transition text-lg flex justify-center items-center gap-2 cursor-wait">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังโหลด...
+                </button>
+                <button onclick="enterSetupScreen()" class="col-span-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
+                    <i data-lucide="settings-2" class="w-5 h-5"></i> จัดทีม & สวมใส่ไอเทม (Synergy)
+                </button>
+                <button onclick="enterGachaScreen()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold py-2.5 rounded-xl transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                    <i data-lucide="gift" class="w-5 h-5 text-yellow-400"></i> <span class="text-xs">ตู้กาชา (10🌟)</span>
+                </button>
+                <button onclick="enterShopScreen()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold py-2.5 rounded-xl transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-cyan-400"></i> <span class="text-xs">ร้านค้า & แฟชั่น</span>
+                </button>
+                <button onclick="enterCollectionScreen()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold py-2.5 rounded-xl transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                    <i data-lucide="book" class="w-5 h-5 text-rose-400"></i> <span class="text-xs">สมุดสะสม & อัปเกรด</span>
+                </button>
+                <button onclick="enterProfileScreen()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-bold py-2.5 rounded-xl transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                    <i data-lucide="user" class="w-5 h-5 text-purple-400"></i> <span class="text-xs">โปรไฟล์ & ตกแต่ง</span>
+                </button>
+            </div>
+            <p class="text-[9px] text-gray-500 text-center leading-tight mt-2">เกมนี้สร้างโดยแฟนคลับเพื่อความบันเทิง ไม่ใช่เกมอย่างเป็นทางการ <button onclick="showDisclaimer()" class="underline text-gray-400 hover:text-white">อ่านประกาศ</button></p>
+        </div>
+
+        <!-- Screen 1.5: หน้าจัดทีมและไอเทม -->
+        <div id="setup-screen" class="screen h-full p-6 relative z-10 flex flex-col">
+            <div class="flex justify-between items-center mb-2 mt-2">
+                <button onclick="switchScreen('start-screen')" class="text-gray-400 bg-gray-800 p-2 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="overflow-y-auto custom-scrollbar pr-2 pb-4 flex-1">
+                <h2 class="text-xl font-bold text-purple-400 font-cute flex items-center gap-2 mb-3"><i data-lucide="users"></i> เลือกโอชิลงสนาม</h2>
+                <div id="oshi-list" class="flex flex-col gap-3 mb-6"></div>
+
+                <h2 class="text-xl font-bold text-cyan-400 font-cute flex items-center gap-2 mb-1"><i data-lucide="backpack"></i> กระเป๋าไอเทม</h2>
+                <p class="text-gray-400 text-[10px] mb-3">ไอเทมระดับ SR จะมีโบนัสพิเศษ (Synergy) หากใส่ให้ตรงกับเมมเบอร์ และยิ่งอัปเกรดเลเวลสูง บัฟยิ่งแรง!</p>
+                <div id="equip-list" class="grid grid-cols-2 gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Screen 2: หน้าเล่นเกม -->
+        <div id="game-screen" class="screen h-full p-6 relative z-10">
+            <div class="w-full bg-gray-800 h-2 rounded-full mb-4 overflow-hidden border border-gray-700"><div id="timer-bar" class="bg-gradient-to-r from-green-400 to-emerald-500 h-full w-full"></div></div>
+            <div class="flex justify-between items-center mb-4 bg-gray-800/50 p-4 rounded-2xl border border-gray-700">
+                <div class="flex flex-col"><span class="flex items-center gap-2"><span class="text-xs text-gray-400 uppercase tracking-wider">Score</span><button onclick="showSettings()" title="ตั้งค่า" class="text-sm leading-none opacity-80">⚙️</button></span><span id="score-display" class="text-2xl font-bold text-rose-400">0</span></div><span id="combo-display" class="hidden text-sm font-bold text-orange-400 bg-orange-500/20 border border-orange-500/40 px-3 py-1 rounded-full"></span>
+                <div class="flex flex-col items-end"><div class="flex gap-1 mb-1" id="lives-display"></div><span id="shield-display" class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full hidden border border-blue-500/50"><i data-lucide="shield" class="w-3 h-3 inline"></i> โล่ทำงาน</span></div>
+            </div>
+            <div class="text-center mb-4"><span id="question-number" class="text-sm font-semibold text-rose-500 bg-rose-500/20 px-4 py-1.5 rounded-full">ข้อที่ 1</span></div>
+            <div class="bg-gray-800 border border-gray-600 rounded-2xl p-6 mb-4 shadow-lg min-h-[120px] flex items-center justify-center text-center"><h2 id="question-text" class="text-lg md:text-xl font-medium text-white leading-relaxed">กำลังโหลด...</h2></div>
+            <div id="options-container" class="grid grid-cols-1 gap-3 flex-1 content-start"></div>
+            <div id="feedback-box" class="absolute bottom-0 left-0 w-full bg-gray-900 border-t-4 border-rose-500 p-6 transform translate-y-full transition-transform duration-300 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+                <div class="flex items-center gap-3 mb-2"><i id="feedback-icon" class="w-6 h-6"></i><h3 id="feedback-title" class="font-bold text-lg">ถูกต้อง!</h3></div>
+                <p id="feedback-desc" class="text-sm text-gray-300 mb-4 line-clamp-3">คำอธิบาย</p>
+                <button id="btn-next-question" onclick="nextQuestion()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition">ไปข้อต่อไป <i data-lucide="arrow-right" class="inline w-4 h-4"></i></button>
+            </div>
+        </div>
+
+        <!-- Screen 3: หน้าสรุปผล -->
+        <div id="result-screen" class="screen h-full items-center justify-center p-8 text-center relative z-10">
+            <i data-lucide="skull" class="w-16 h-16 text-gray-500 mb-4"></i><h2 class="text-3xl font-bold text-white mb-2 font-cute">GAME OVER</h2>
+            <div class="bg-gray-800 border border-gray-700 rounded-3xl p-6 w-full mb-6 shadow-lg"><div id="new-record-banner" class="hidden mb-3 bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 text-sm font-bold rounded-xl py-2 animate-pulse">🏆 ทำลายสถิติใหม่!</div><p class="text-sm text-gray-400 mb-1">คะแนนสะสมรอบนี้</p><p id="final-score" class="text-5xl font-bold text-rose-500 mb-4">0</p><div class="grid grid-cols-3 gap-2 mb-4"><div class="bg-gray-900 rounded-xl p-2"><div class="text-[10px] text-gray-400">ตอบถูกรอบนี้</div><div id="final-correct" class="font-bold text-green-400">0 ข้อ</div></div><div class="bg-gray-900 rounded-xl p-2"><div class="text-[10px] text-gray-400">คะแนนสูงสุด</div><div id="final-highscore" class="font-bold text-yellow-400">0</div></div><div class="bg-gray-900 rounded-xl p-2"><div class="text-[10px] text-gray-400">คอมโบสูงสุด</div><div id="final-combo" class="font-bold text-orange-400">-</div></div></div><div class="bg-gray-900 rounded-xl p-3 flex justify-between items-center border border-yellow-500/30"><span class="text-sm text-yellow-100">ได้รับเงินรางวัล</span><span id="earned-coins" class="text-xl font-bold text-yellow-400 flex items-center gap-1">+0 <i data-lucide="sparkles" class="w-4 h-4"></i></span></div></div>
+            <div class="grid grid-cols-2 gap-3 w-full"><button onclick="switchScreen('start-screen')" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition">กลับหน้าแรก</button><button onclick="enterGachaScreen()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i> หมุนกาชา</button></div>
+        </div>
+
+        <!-- Screen 4: ตู้สุ่มกาชา -->
+        <div id="gacha-screen" class="screen h-full p-6 relative z-10 items-center">
+            <div class="flex justify-between items-center w-full mb-2 mt-1">
+                <button onclick="switchScreen('start-screen')" class="text-gray-400 bg-gray-800 p-2 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <button onclick="enterCollectionScreen()" class="text-gray-400 bg-gray-800 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4"></i> สมุดสะสม</button>
+            </div>
+            <h2 class="text-xl font-bold text-yellow-400 mb-3 font-cute flex items-center gap-2"><i data-lucide="gift"></i> ตู้สุ่ม 48 Group</h2>
+            
+            <div class="flex-1 w-full flex flex-col items-center justify-center overflow-hidden my-1">
+                <div id="gacha-machine" class="w-40 h-40 bg-gray-800 border-4 border-gray-700 rounded-full flex items-center justify-center shadow-lg transition-all"><i data-lucide="package" class="w-16 h-16 text-gray-500"></i></div>
+                
+                <div id="gacha-result" class="hidden w-full max-w-[270px] rounded-2xl p-5 text-center transform scale-0 transition-transform duration-500 flex flex-col items-center">
+                    <div id="gacha-img-container" class="w-20 h-20 mb-2 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg flex items-center justify-center text-4xl">
+                        <img id="gacha-image" src="" class="w-full h-full object-cover hidden">
+                        <span id="gacha-emoji-fallback">🎁</span>
+                    </div>
+                    <h3 class="text-[10px] font-bold opacity-70 mb-0.5" id="gacha-rarity">RARITY</h3>
+                    <h2 class="text-base font-bold mb-1" id="gacha-name">ชื่อการ์ด</h2>
+                    <p class="text-[11px] opacity-80 mb-2 leading-tight" id="gacha-buff">บวกสเตตัส</p>
+                    <div class="mt-1 pt-2 w-full border-t border-black/10 text-[11px] font-bold" id="gacha-duplicate-badge"></div>
+                </div>
+
+                <div id="gacha-multi-result" class="hidden w-full h-full flex flex-col bg-gray-800/90 border border-gray-700 rounded-2xl p-3 overflow-hidden shadow-xl">
+                    <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-gray-700">
+                        <span id="multi-result-title" class="text-xs font-bold text-yellow-400">ผลการสุ่ม</span>
+                        <span id="multi-result-summary" class="text-[10px] text-gray-300"></span>
+                    </div>
+                    <div id="gacha-multi-grid" class="grid grid-cols-3 gap-2 overflow-y-auto custom-scrollbar pr-1 flex-1 content-start"></div>
+                </div>
+            </div>
+            
+            <div class="w-full pt-2">
+                <p id="pity-info" class="text-[10px] text-gray-400 text-center mb-1.5 leading-tight"></p>
+                <div class="text-center mb-2"><span class="text-gray-400 text-xs">เงินทุนของคุณ: </span><span id="gacha-coin-balance" class="text-lg font-bold text-yellow-400">0 🌟</span></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btn-pull-1" onclick="pullGacha(1)" class="bg-yellow-500 hover:bg-yellow-400 text-yellow-950 font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex flex-col items-center justify-center">
+                        <span>หมุน 1 ครั้ง</span>
+                        <span class="text-[10px] opacity-80">ใช้ 10 🌟</span>
+                    </button>
+                    <button id="btn-pull-10" onclick="pullGacha(10)" class="bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex flex-col items-center justify-center">
+                        <span>หมุน 10 ครั้ง</span>
+                        <span class="text-[10px] opacity-80">ใช้ 100 🌟</span>
+                    </button>
+                    <button id="btn-pull-all" onclick="confirmPullAll()" class="col-span-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="Flame" class="w-4 h-4"></i> <span id="btn-pull-all-text">สุ่มด้วยเงินทั้งหมดที่มี</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: สมุดสะสม & อัปเกรด -->
+        <div id="collection-screen" class="screen h-full p-6 relative z-10 flex flex-col">
+            <div class="flex justify-between items-center mb-4 mt-2">
+                <button onclick="switchScreen('start-screen')" class="text-gray-400 bg-gray-800 p-2 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <div class="text-cyan-400 font-bold bg-cyan-900/30 px-3 py-1 rounded-full text-sm flex items-center gap-1">เงิน: <span id="col-money">0</span> 🌟</div>
+            </div>
+            
+            <div class="flex justify-between items-end mb-2">
+                <h2 class="text-2xl font-bold text-rose-400 font-cute flex items-center gap-2"><i data-lucide="book"></i> สมุดสะสม</h2>
+                <button onclick="sellAllDuplicates()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold px-3 py-2 rounded-xl shadow-md transition active:scale-95 flex items-center gap-1"><i data-lucide="coins" class="w-3 h-3"></i> ขายซ้ำทั้งหมด</button>
+            </div>
+            <p class="text-gray-400 text-[11px] mb-4">นำไอเทมที่สุ่มได้ซ้ำมา <b class="text-green-400">อัปเกรด (Lv.5)</b> หรือ <b class="text-cyan-400">ย่อยเป็นเงิน 🌟</b></p>
+            
+            <div id="collection-grid" class="grid grid-cols-2 gap-3 overflow-y-auto custom-scrollbar pr-2 pb-4 flex-1 content-start"></div>
+        </div>
+
+        <!-- Screen 6: ร้านค้า & บูติกแฟชั่น -->
+        <div id="shop-screen" class="screen h-full p-6 relative z-10 flex flex-col">
+            <div class="flex justify-between items-center mb-3 mt-1">
+                <button onclick="switchScreen('start-screen')" class="text-gray-400 bg-gray-800 p-2 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <div class="text-cyan-400 font-bold bg-cyan-900/30 px-3 py-1 rounded-full text-sm flex items-center gap-1">เงินทุน: <span id="shop-money">0</span> 🌟</div>
+            </div>
+            <h2 class="text-2xl font-bold text-cyan-400 font-cute flex items-center gap-2 mb-3"><i data-lucide="shopping-cart"></i> ร้านค้าโอชิ</h2>
+            
+            <!-- แท็บสลับหมวดร้านค้า -->
+            <div class="grid grid-cols-2 gap-2 mb-3 bg-gray-800/80 p-1 rounded-xl border border-gray-700">
+                <button id="tab-shop-cards" onclick="switchShopTab('cards')" class="py-2 rounded-lg text-xs font-bold transition bg-cyan-600 text-white">🃏 ยุทธภัณฑ์ & เมมเบอร์</button>
+                <button id="tab-shop-cosmetics" onclick="switchShopTab('cosmetics')" class="py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white">🎨 แฟชั่น & ของตกแต่ง</button>
+            </div>
+
+            <div id="shop-items" class="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 pb-4 flex-1"></div>
+        </div>
+
+        <!-- Screen 7: โปรไฟล์ & ตกแต่ง -->
+        <div id="profile-screen" class="screen h-full p-6 relative z-10 flex flex-col items-center overflow-y-auto custom-scrollbar">
+            <div class="w-full mb-3 mt-1 flex justify-between items-center">
+                <button onclick="switchScreen('start-screen')" class="text-gray-400 bg-gray-800 p-2 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <button onclick="enterShopScreen(); switchShopTab('cosmetics');" class="text-xs font-bold text-pink-400 bg-pink-900/30 border border-pink-500/30 px-3 py-1.5 rounded-full flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ไปร้านแฟชั่น</button>
+            </div>
+            
+            <div id="prof-avatar-frame" class="w-24 h-24 bg-purple-600 rounded-full flex items-center justify-center mb-3 frame-default relative shrink-0 overflow-visible">
+                <img id="prof-oshi-img" src="" class="w-full h-full object-cover rounded-full hidden">
+                <i id="prof-oshi-icon" data-lucide="user" class="w-12 h-12 text-white"></i>
+                <div class="absolute -bottom-2 bg-yellow-500 text-black text-xs font-bold px-3 py-0.5 rounded-full border-2 border-gray-800">Lv. <span id="prof-level">1</span></div>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-0.5" id="prof-name">โอตะฝึกหัด</h2>
+            <p class="text-purple-300 text-xs font-bold mb-4 bg-purple-900/40 border border-purple-500/30 px-3 py-1 rounded-full" id="prof-title">ฉายา: แฟนคลับหน้าใหม่</p>
+
+            <!-- กล่องสถิติ -->
+            <div class="bg-gray-800 border border-gray-700 w-full rounded-2xl p-4 shadow-lg mb-4">
+                <h3 class="text-gray-400 text-xs font-bold mb-3 border-b border-gray-700 pb-1.5">📊 สถิติการเล่น (Stats)</h3>
+                <div class="flex justify-between items-center mb-2 text-sm"><span class="text-gray-300">คะแนนสูงสุด (High Score)</span><span class="font-bold text-rose-400" id="stat-highscore">0</span></div>
+                <div class="flex justify-between items-center mb-2 text-sm"><span class="text-gray-300">ตอบถูกทั้งหมด</span><span class="font-bold text-green-400" id="stat-correct">0 ข้อ</span></div>
+                <div class="flex justify-between items-center text-sm"><span class="text-gray-300">ความคืบหน้าสมุดสะสม</span><span class="font-bold text-yellow-400" id="stat-collection">0/9</span></div>
+            </div>
+
+            <!-- กล่องปรับแต่งของสะสมที่ปลดล็อกแล้ว -->
+            <div class="bg-gray-800 border border-gray-700 w-full rounded-2xl p-4 shadow-lg mb-4">
+                <h3 class="text-pink-400 text-xs font-bold mb-3 border-b border-gray-700 pb-1.5">✨ ปรับแต่งโปรไฟล์ & ธีม</h3>
+                
+                <div class="mb-3">
+                    <label class="text-[11px] text-gray-400 block mb-1">🎨 ธีมสีพื้นหลังเว็บ (Stage Theme)</label>
+                    <div id="prof-themes-list" class="grid grid-cols-2 gap-1.5"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="text-[11px] text-gray-400 block mb-1">🖼️ กรอบรูปโปรไฟล์ (Avatar Frame)</label>
+                    <div id="prof-frames-list" class="grid grid-cols-2 gap-1.5"></div>
+                </div>
+
+                <div>
+                    <label class="text-[11px] text-gray-400 block mb-1">🏷️ ป้ายฉายา (Title Badge)</label>
+                    <div id="prof-titles-list" class="grid grid-cols-1 gap-1.5"></div>
+                </div>
+            </div>
+
+            <!-- สำรอง / โหลดเซฟ -->
+            <div class="grid grid-cols-2 gap-3 w-full pb-2">
+                <button onclick="exportSave()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl text-xs">สำรองเซฟ</button>
+                <button onclick="importSave()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl text-xs">โหลดเซฟ</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const SHEET_ID = '1qlogqHR94LvFQ2lnhdkyW8fnSHxGck6U7hBDCd8saEI'; 
+        const GID = '81950630'; 
+        const fallbackDatabase = [
+            { question: "ซิงเกิลเดบิวต์ (เพลงแรก) ของ BNK48 คือเพลงอะไร?", options: ["คุกกี้เสี่ยงทาย", "อยากจะได้พบเธอ (Aitakatta)", "วันแรก (Shonichi)", "เธอนั่นแหละ (Can you?)"], answer: 1, lore: "BNK48 เดบิวต์ด้วยซิงเกิล 'Aitakatta' ก่อนจะมาเป็นกระแสพลุแตกในซิงเกิลที่ 2" },
+            { question: "งาน Janken Tournament คือการแข่งขันอะไร?", options: ["แข่งเป่ายิ้งฉุบ", "แข่งกีฬาสี", "แข่งร้องเพลง", "แข่งเต้น Cover"], answer: 0, lore: "Janken แปลว่า เป่ายิ้งฉุบ เป็นอีเวนต์ที่วัดดวงล้วนๆ" }
+        ];
+
+        // --- ฐานข้อมูลเมมเบอร์ BNK48 ปัจจุบัน ---
+        const memberPool = [
+            // รุ่นที่ 3
+            { nickname: "ฮูพ (Hoop)", fullname: "ปาฏลี ประเสริฐธีระชัย", gen: "รุ่นที่ 3", team: "Team BIII", bday: "18 กันยายน", province: "ชลบุรี", blood: "B" },
+            { nickname: "แพนเค้ก (Pancake)", fullname: "พิทยาภรณ์ เกียรติฐิตินันท์", gen: "รุ่นที่ 3", team: "Team NV", bday: "6 กุมภาพันธ์", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "โยเกิร์ต (Yoghurt)", fullname: "นพรดา เลิศวิริยะพร", gen: "รุ่นที่ 3", team: "Team NV", bday: "10 พฤศจิกายน", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "โมเน่ต์ (Monet)", fullname: "ภาริตา ริเริ่มกุล", gen: "รุ่นที่ 3", team: "Team BIII", bday: "4 สิงหาคม", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "เฟม (Fame)", fullname: "นันทภัค กิตติรัตนวิวัฒน์", gen: "รุ่นที่ 3", team: "Team BIII", bday: "15 ตุลาคม", province: "กรุงเทพมหานคร", blood: "A" },
+            // รุ่นที่ 4 
+            { nickname: "แอล (L)", fullname: "สิริกร นิลกษาปน์", gen: "รุ่นที่ 4", team: "Team NV", bday: "13 กุมภาพันธ์", province: "หนองบัวลำภู", blood: "O" },
+            { nickname: "มารีน (Marine)", fullname: "กชพร พรโชคชัย", gen: "รุ่นที่ 4", team: "Team BIII", bday: "29 เมษายน", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "แจนรี่ (Janry)", fullname: "กัลยารัตน์ ปั้นพิพัฒน์", gen: "รุ่นที่ 4", team: "Team BIII", bday: "3 มกราคม", province: "สุราษฎร์ธานี", blood: "O" },
+            { nickname: "เอ็มมี่ (Emmy)", fullname: "อรณิชชา พรหมสุภา", gen: "รุ่นที่ 4", team: "Team NV", bday: "13 กันยายน", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "ปาล์มมี่ (Palmmy)", fullname: "ปุญญิสา เกตุสุวรรณ", gen: "รุ่นที่ 4", team: "Team NV", bday: "28 ตุลาคม", province: "สมุทรปราการ", blood: "O" },
+            { nickname: "ซินดี้ (Sindy)", fullname: "กฤตชญา อุดมบุญดี", gen: "รุ่นที่ 4", team: "Team NV", bday: "3 เมษายน", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "วาว่า (Wawa)", fullname: "พิมพ์นเรศ ลำใย", gen: "รุ่นที่ 4", team: "Team BIII", bday: "11 สิงหาคม", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "มิชา (Micha)", fullname: "ณัฐรินีย์ กุศลพัฒน์", gen: "รุ่นที่ 4", team: "Team BIII", bday: "12 มิถุนายน", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "แพท (Patt)", fullname: "ภัทรา ธีระวาส", gen: "รุ่นที่ 4", team: "Team BIII", bday: "17 มิถุนายน", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "เบอร์รี่ (Berry)", fullname: "จิรภิญญา จันทวรรณกูร", gen: "รุ่นที่ 4", team: "Team NV", bday: "23 กรกฎาคม", province: "พิษณุโลก", blood: "A" },
+            // รุ่นที่ 5 
+            { nickname: "อาหลี (Arlee)", fullname: "ชนากานต์ โอสถานุภาพ", gen: "รุ่นที่ 5", team: "Team NV", bday: "26 มีนาคม", province: "นครราชสีมา", blood: "O" },
+            { nickname: "เกลญ่า (Galeya)", fullname: "นภภัค โชคคุณานันทกุล", gen: "รุ่นที่ 5", team: "Trainee", bday: "24 ธันวาคม", province: "กรุงเทพมหานคร", blood: "A" },
+            { nickname: "จิว (Jew)", fullname: "ณัฐญาฐ์ บวรรัตนศิลป์", gen: "รุ่นที่ 5", team: "Team NV", bday: "28 พฤศจิกายน", province: "สมุทรปราการ", blood: "O" },
+            { nickname: "ไข่มุก (Khaimook)", fullname: "นันท์นภัส สมวัฒน์", gen: "รุ่นที่ 5", team: "Trainee", bday: "5 มกราคม", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "เมย์จิ (Mayji)", fullname: "ศุภิสรา จิริวิภากร", gen: "รุ่นที่ 5", team: "Trainee", bday: "5 พฤษภาคม", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "แนล (Nall)", fullname: "แนลริยา วิภาคกิจ", gen: "รุ่นที่ 5", team: "Trainee", bday: "25 สิงหาคม", province: "เชียงใหม่", blood: "O" },
+            { nickname: "น้ำมนต์ (Nammonn)", fullname: "ณัฐมนต์ สองทิศ", gen: "รุ่นที่ 5", team: "Trainee", bday: "10 สิงหาคม", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "นีน (Neen)", fullname: "นีร บุนนาค", gen: "รุ่นที่ 5", team: "Trainee", bday: "14 เมษายน", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "นีญ่า (Niya)", fullname: "สุวิภาส์ ลายถมยา", gen: "รุ่นที่ 5", team: "Trainee", bday: "14 กุมภาพันธ์", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "ภราว (Proud)", fullname: "ภารวี จิรธาดาสกุล", gen: "รุ่นที่ 5", team: "Team NV", bday: "14 พฤศจิกายน", province: "ปทุมธานี", blood: "B" },
+            { nickname: "สาวน้อย (Saonoi)", fullname: "พิชญ์สินี อิทธิรัตนะโกมล", gen: "รุ่นที่ 5", team: "Team NV", bday: "9 พฤศจิกายน", province: "กรุงเทพมหานคร", blood: "B" },
+            // รุ่นที่ 6 
+            { nickname: "บลายธ์ (Blythe)", fullname: "ณัฏฐ์รัญศา ศิริลาภวิบูรณ์", gen: "รุ่นที่ 6", team: "Trainee", bday: "22 กรกฎาคม", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "การ์ตูน (Cartoon)", fullname: "ณัฎฐธิดา ณ อัมภัย", gen: "รุ่นที่ 6", team: "Trainee", bday: "26 สิงหาคม", province: "ศรีสะเกษ", blood: "AB" },
+            { nickname: "เกรพ (Grape)", fullname: "เอมิกา ยอดแสง", gen: "รุ่นที่ 6", team: "Trainee", bday: "8 เมษายน", province: "ปทุมธานี", blood: "A" },
+            { nickname: "อิ้งค์ชา (Inkcha)", fullname: "ชลิตา กิตติคุณ", gen: "รุ่นที่ 6", team: "Trainee", bday: "31 กรกฎาคม", province: "กรุงเทพมหานคร", blood: "B" },
+            { nickname: "ข้าวจ้าว (Khowjow)", fullname: "ชัญญานุช โผกรุด", gen: "รุ่นที่ 6", team: "Trainee", bday: "23 กุมภาพันธ์", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "ลูกศร (Luksorn)", fullname: "ทัศน์ลักษณ์ แก้วบัวรบัติ", gen: "รุ่นที่ 6", team: "Team BIII", bday: "27 มิถุนายน", province: "นนทบุรี", blood: "A" },
+            { nickname: "เมล (Mail)", fullname: "สิดาพร หลินถาวรดี", gen: "รุ่นที่ 6", team: "Team BIII", bday: "17 กรกฎาคม", province: "กรุงเทพมหานคร", blood: "O" },
+            { nickname: "มิ้นท์ (Mint)", fullname: "ณัฐมณ วรพิทยุต", gen: "รุ่นที่ 6", team: "Trainee", bday: "4 กุมภาพันธ์", province: "กรุงเทพมหานคร", blood: "A" },
+            { nickname: "มิริน (Mirin)", fullname: "รินณ์ลิสา บูรภากรณ์", gen: "รุ่นที่ 6", team: "Trainee", bday: "28 พฤษภาคม", province: "ปทุมธานี", blood: "O" },
+            { nickname: "แพรว (Praew)", fullname: "แพรวา ศิริวัฒนศักดิกุล", gen: "รุ่นที่ 6", team: "Team BIII", bday: "23 พฤษภาคม", province: "กรุงเทพมหานคร", blood: "A" },
+            { nickname: "โรส (Rose)", fullname: "ปาณิสรา บูรณาภา", gen: "รุ่นที่ 6", team: "Trainee", bday: "1 พฤศจิกายน", province: "นครปฐม", blood: "B" }
+        ];
+
+        function generateMemberQuestions(amount = 15) {
+            if (memberPool.length < 4) return [];
+            const generated = [];
+            const allGens = ["รุ่นที่ 3", "รุ่นที่ 4", "รุ่นที่ 5", "รุ่นที่ 6"];
+
+            for (let i = 0; i < amount; i++) {
+                const target = memberPool[Math.floor(Math.random() * memberPool.length)];
+                const others = shuffle(memberPool.filter(m => m.nickname !== target.nickname));
+                const qType = Math.floor(Math.random() * 5) + 1;
+
+                if (qType === 1) {
+                    const distractors = others.slice(0, 3).map(d => d.nickname);
+                    generated.push({
+                        question: `"${target.fullname}" คือชื่อ-นามสกุลจริงของเมมเบอร์คนใด?`,
+                        options: [target.nickname, ...distractors],
+                        answer: 0,
+                        lore: `${target.fullname} คือชื่อจริงของ ${target.nickname} (${target.gen} • ${target.team})`
+                    });
+                } else if (qType === 2) {
+                    const distractors = others.slice(0, 3).map(d => d.fullname);
+                    generated.push({
+                        question: `ข้อใดคือชื่อ-นามสกุลจริงของ "${target.nickname}"?`,
+                        options: [target.fullname, ...distractors],
+                        answer: 0,
+                        lore: `${target.nickname} มีชื่อจริงว่า ${target.fullname} (${target.gen})`
+                    });
+                } else if (qType === 3) {
+                    const wrongGens = allGens.filter(g => g !== target.gen);
+                    generated.push({
+                        question: `เมมเบอร์ "${target.nickname}" เป็นสมาชิก BNK48 รุ่นที่เท่าไหร่?`,
+                        options: [target.gen, ...wrongGens],
+                        answer: 0,
+                        lore: `${target.nickname} (${target.fullname}) เป็นสมาชิก BNK48 ${target.gen}`
+                    });
+                } else if (qType === 4) {
+                    const uniqueBdays = [...new Set(others.filter(m => m.bday !== target.bday).map(d => d.bday))].slice(0, 3);
+                    if (uniqueBdays.length === 3) {
+                        generated.push({
+                            question: `วันเกิดของ "${target.nickname}" ตรงกับวันที่เท่าไหร่?`,
+                            options: [target.bday, ...uniqueBdays],
+                            answer: 0,
+                            lore: `วันคล้ายวันเกิดของ ${target.nickname} คือวันที่ ${target.bday}`
+                        });
+                    }
+                } else if (qType === 5) {
+                    const uniqueProvs = [...new Set(others.filter(m => m.province !== target.province).map(d => d.province))].slice(0, 3);
+                    if (uniqueProvs.length === 3) {
+                        generated.push({
+                            question: `ตามข้อมูลโปรไฟล์ "${target.nickname}" มีภูมิลำเนามาจากจังหวัดใด?`,
+                            options: [target.province, ...uniqueProvs],
+                            answer: 0,
+                            lore: `${target.nickname} มีภูมิลำเนามาจากจังหวัด${target.province}`
+                        });
+                    }
+                }
+            }
+            return generated.filter(q => q.options.length === 4 && new Set(q.options).size === 4);
+        }
+
+        // --- ฐานข้อมูล Oshi ---
+        const oshisData = {
+            'trainee': { id: 'trainee', name: 'เด็กฝึก', buff: 'ไม่มีความสามารถพิเศษ', color: 'bg-gray-500', img: '', icon: 'user' }, 
+            'rose': { id: 'rose', name: 'Rose', buff: 'หัวใจ 4 ดวง (อึดกว่าปกติ)', color: 'bg-rose-500', img: 'images/rose.png', icon: 'heart' },
+            'hoop': { id: 'hoop', name: 'Hoop', buff: 'เวลาตอบเพิ่มเป็น 15 วินาที', color: 'bg-orange-500', img: 'images/hoop.png', icon: 'zap' },
+            'l': { id: 'l', name: 'L', buff: 'มีโล่ป้องกันตอบผิด 1 ครั้ง', color: 'bg-blue-500', img: 'images/l.png', icon: 'shield' }
+        };
+
+        // --- ฐานข้อมูลของตกแต่ง ---
+        const cosmeticsCatalog = {
+            themes: [
+                { id: 'default', name: 'Crimson Theater (เริ่มต้น)', css: 'theme-default', cost: 0, emoji: '🎭', preview: 'bg-gradient-to-r from-rose-700 to-black' },
+                { id: 'pastel', name: 'BNK48 Pastel Orchid', css: 'theme-pastel', cost: 150, emoji: '🌸', preview: 'bg-gradient-to-r from-purple-400 to-pink-400' },
+                { id: 'mint', name: 'CGM48 Mint Forest', css: 'theme-mint', cost: 150, emoji: '🌿', preview: 'bg-gradient-to-r from-emerald-500 to-teal-700' },
+                { id: 'neon', name: 'Neon Cyber Stage', css: 'theme-neon', cost: 250, emoji: '🌌', preview: 'bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600' }
+            ],
+            frames: [
+                { id: 'default', name: 'กรอบมาตรฐาน', css: 'frame-default', cost: 0, emoji: '⭕' },
+                { id: 'gold', name: 'กรอบทอง Kami 7', css: 'frame-gold', cost: 200, emoji: '👑' },
+                { id: 'neon', name: 'กรอบสายฟ้าไซเบอร์', css: 'frame-neon', cost: 200, emoji: '⚡' },
+                { id: 'rainbow', name: 'กรอบออร่าเซ็นเตอร์', css: 'frame-rainbow', cost: 350, emoji: '🌈' }
+            ],
+            titles: [
+                { id: 'auto', name: 'ฉายาตามระดับเลเวล (อัตโนมัติ)', text: null, cost: 0, emoji: '🎖️' },
+                { id: 'sultan', name: '👑 สุลต่านเหมาตู้', text: '👑 สุลต่านเหมาตู้', cost: 120, emoji: '🐳' },
+                { id: 'legend_oshi', name: '🌹 ตันโอชิระดับตำนาน', text: '🌹 ตันโอชิระดับตำนาน', cost: 150, emoji: '🌹' },
+                { id: 'speed_god', name: '⚡ มือไวใจนิ่ง', text: '⚡ มือไวใจนิ่ง', cost: 150, emoji: '⚡' },
+                { id: 'true_fan', name: '💎 แฟนพันธุ์แท้ 48G', text: '💎 แฟนพันธุ์แท้ 48G', cost: 300, emoji: '💎' }
+            ]
+        };
+
+        // --- โครงสร้าง Gacha Pool ปรับสมดุลใหม่ (แก้บัคช่องโหว่ปั๊มเงิน และอัปเกรดความสามารถ) ---
+        const gachaPool = [
+            { id: 1, name: "แท่งไฟ BNK48", rarity: "N", type: "equip", bgClass: "bg-gray-200 border-gray-400", textClass: "text-gray-800", emoji: "🔦", weight: 30, sell: 1, buffDesc: "คะแนน +10%" },
+            { id: 2, name: "บัตรจับมือ", rarity: "N", type: "equip", bgClass: "bg-gray-200 border-gray-400", textClass: "text-gray-800", emoji: "🤝", weight: 30, sell: 1, buffDesc: "รับเงิน +1 🌟/ข้อถูก" },
+            { id: 4, name: "ป้ายไฟ LED", rarity: "N", type: "equip", bgClass: "bg-gray-200 border-gray-400", textClass: "text-gray-800", emoji: "💡", weight: 30, sell: 1, buffDesc: "เพิ่มเวลา +1 วิ" },
+            { id: 3, name: "ที่นั่ง VIP", rarity: "R", type: "equip", bgClass: "bg-blue-100 border-blue-400", textClass: "text-blue-900", emoji: "🪑", weight: 15, sell: 5, buffDesc: "เพิ่มเวลา +2 วิ" },
+            
+            { id: 101, name: "ตุ๊กตาฉลาม (Rose)", rarity: "SR", type: "equip", owner: 'rose', bgClass: "bg-purple-200 border-purple-500", textClass: "text-purple-900", emoji: "🦈", weight: 4, sell: 20, buffDesc: "คะแนน +15%", synergyDesc: "โบนัส Rose: หัวใจ +1 ดวง" },
+            { id: 102, name: "กล้องฟิล์ม (Hoop)", rarity: "SR", type: "equip", owner: 'hoop', bgClass: "bg-purple-200 border-purple-500", textClass: "text-purple-900", emoji: "📸", weight: 4, sell: 20, buffDesc: "คะแนน +15%", synergyDesc: "โบนัส Hoop: เวลา +5 วิ" },
+            { id: 103, name: "เครื่องเกม (L)", rarity: "SR", type: "equip", owner: 'l', bgClass: "bg-purple-200 border-purple-500", textClass: "text-purple-900", emoji: "🎮", weight: 4, sell: 20, buffDesc: "รับเงิน +3 🌟/ข้อถูก", synergyDesc: "โบนัส L: คะแนน +30%" },
+
+            { id: 201, name: "SSR: เดบิวต์ Rose", rarity: "SSR", type: "unlock", oshiId: 'rose', bgClass: "card-ssr", textClass: "text-yellow-900", emoji: "🌹", img: "images/rose.png", weight: 1, sell: 100, buffDesc: "ปลดล็อกตัวละคร Rose" },
+            { id: 202, name: "SSR: เดบิวต์ Hoop", rarity: "SSR", type: "unlock", oshiId: 'hoop', bgClass: "card-ssr", textClass: "text-yellow-900", emoji: "⚡", img: "images/hoop.png", weight: 1, sell: 100, buffDesc: "ปลดล็อกตัวละคร Hoop" },
+            { id: 203, name: "SSR: เดบิวต์ L", rarity: "SSR", type: "unlock", oshiId: 'l', bgClass: "card-ssr", textClass: "text-yellow-900", emoji: "🛡️", img: "images/l.png", weight: 1, sell: 100, buffDesc: "ปลดล็อกตัวละคร L" }
+        ];
+
+        const MAX_ITEM_LEVEL = 5;
+
+        let database = []; let sheetLoadTimeout;
+        let questions = []; let currentQ = 0; let questionCounter = 1; let score = 0; let lives = 3; let questionAnswered = false;
+        
+        let maxTime = 10; let timeLeft = 10; let timerInterval; let hasShield = false;
+        let activeScoreMultiplier = 1.0; let activeBonusMoney = 0;
+
+        let money = 0; let inventory = {}; let itemLevels = {}; let stats = { highscore: 0, totalCorrect: 0 };
+        let unlockedOshis = ['trainee']; let selectedOshi = 'trainee'; let equippedItems = []; 
+        
+        let unlockedThemes = ['default']; let selectedTheme = 'default';
+        let unlockedFrames = ['default']; let selectedFrame = 'default';
+        let unlockedTitles = ['auto']; let selectedTitle = 'auto';
+        let currentShopTab = 'cards';
+
+        let isPulling = false;
+        let questionDeadline = 0; let correctThisRound = 0; let prevHighscore = 0;
+        let combo = 0; let bestComboRound = 0;
+        let pity = { sr: 0, ssr: 0 };
+        const PITY_SR = 10, PITY_SSR = 50; 
+
+        // คำนวณบัฟที่เพิ่มขึ้นตามการอัปเกรดเลเวล
+        function getItemLevel(id) {
+            return Math.min(MAX_ITEM_LEVEL, Math.max(1, parseInt(itemLevels[id]) || 1));
+        }
+
+        function getItemBuffText(id, lv) {
+            const level = lv || getItemLevel(id);
+            const bonusLv = level - 1;
+            if (id === 1) return `คะแนน +${10 + bonusLv * 5}%`;
+            if (id === 2) return `เงิน +${1 + Math.floor(bonusLv * 0.5)} 🌟/ข้อ`;
+            if (id === 3) {
+                const sec = 2 + bonusLv * 0.5;
+                return `เพิ่มเวลา +${Number.isInteger(sec) ? sec : sec.toFixed(1)} วิ`;
+            }
+            if (id === 4) {
+                const sec = 1 + bonusLv * 0.5;
+                return `เพิ่มเวลา +${Number.isInteger(sec) ? sec : sec.toFixed(1)} วิ`;
+            }
+            if (id === 101) return `คะแนน +${15 + bonusLv * 5}%`;
+            if (id === 102) return `คะแนน +${15 + bonusLv * 5}%`;
+            if (id === 103) return `เงิน +${3 + bonusLv * 1} 🌟/ข้อ`;
+            const item = gachaPool.find(x => x.id === id);
+            return item ? item.buffDesc : "";
+        }
+
+        function getAutoTitle() {
+            if (unlockedOshis.length >= 4) return "กัปตันทีม 👑";
+            if (stats.totalCorrect > 50) return "โอตะตัวยง 🔥";
+            if (stats.totalCorrect > 20) return "ผู้ติดตามที่ซื่อสัตย์";
+            return "แฟนคลับหน้าใหม่";
+        }
+
+        function getDisplayTitle() {
+            if (selectedTitle && selectedTitle !== 'auto') {
+                const found = cosmeticsCatalog.titles.find(t => t.id === selectedTitle);
+                if (found && found.text) return found.text;
+            }
+            return getAutoTitle();
+        }
+
+        function applyCosmetics() {
+            const body = document.getElementById('app-body');
+            cosmeticsCatalog.themes.forEach(t => body.classList.remove(t.css));
+            const themeObj = cosmeticsCatalog.themes.find(t => t.id === selectedTheme) || cosmeticsCatalog.themes[0];
+            body.classList.add(themeObj.css);
+
+            const frameObj = cosmeticsCatalog.frames.find(f => f.id === selectedFrame) || cosmeticsCatalog.frames[0];
+            ['start-avatar-frame', 'prof-avatar-frame'].forEach(elId => {
+                const el = document.getElementById(elId);
+                if (!el) return;
+                cosmeticsCatalog.frames.forEach(f => el.classList.remove(f.css));
+                el.classList.add(frameObj.css);
+            });
+
+            const titleTxt = `ฉายา: ${getDisplayTitle()}`;
+            const startTitle = document.getElementById('start-title-badge');
+            const profTitle = document.getElementById('prof-title');
+            if (startTitle) startTitle.innerText = titleTxt;
+            if (profTitle) profTitle.innerText = titleTxt;
+        }
+
+        function parseSheetRows(rows) {
+            const result = [];
+            let skipped = 0;
+            const cell = (c, i) => (c && c[i] && c[i].v !== null && c[i].v !== undefined) ? String(c[i].v).trim() : "";
+            rows.forEach((row, idx) => {
+                const c = row.c || [];
+                const no = idx + 1;
+                const question = cell(c, 0);
+                const options = [cell(c, 1), cell(c, 2), cell(c, 3), cell(c, 4)];
+                const answerRaw = cell(c, 5);
+                const answerNum = Number(answerRaw);
+                const lore = cell(c, 6);
+
+                if (!question && options.every(o => !o) && !answerRaw) return;
+                if (idx === 0 && answerRaw !== "" && isNaN(answerNum)) return;
+
+                let problem = "";
+                if (!question) problem = "ไม่มีคำถาม";
+                else if (options.some(o => !o)) problem = "ตัวเลือกไม่ครบ 4 ข้อ";
+                else if (new Set(options.map(o => o.toLowerCase())).size < 4) problem = "มีตัวเลือกซ้ำกัน";
+                else if (!Number.isInteger(answerNum) || answerNum < 1 || answerNum > 4) problem = `เฉลยต้องเป็น 1-4 แต่ได้ "${answerRaw}"`;
+
+                if (problem) {
+                    skipped++;
+                    console.warn(`[Sheet] ข้ามข้อที่ ${no}: ${problem} | "${question}"`);
+                    return;
+                }
+                result.push({ question, options, answer: answerNum - 1, lore });
+            });
+            return result;
+        }
+
+        window.google = {
+            visualization: {
+                Query: {
+                    setResponse: function(data) {
+                        clearTimeout(sheetLoadTimeout);
+                        if (data.status === 'error') { useFallbackData(); return; }
+                        try {
+                            database = parseSheetRows(data.table.rows);
+                            if (database.length === 0) throw new Error("No questions");
+                            readyStartBtn("เริ่มเกมเลย!", "bg-rose-600", "hover:bg-rose-500");
+                        } catch (e) { useFallbackData(); }
+                    }
+                }
+            }
+        };
+
+        function loadQuestionsFromSheet() {
+            sheetLoadTimeout = setTimeout(() => { useFallbackData(); }, 3000);
+            const script = document.createElement('script');
+            script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+            script.onerror = () => { clearTimeout(sheetLoadTimeout); useFallbackData(); };
+            document.body.appendChild(script);
+        }
+
+        function useFallbackData() {
+            database = [...fallbackDatabase];
+            readyStartBtn("เริ่มเกม (โหมดสำรอง)", "bg-orange-600", "hover:bg-orange-500");
+        }
+
+        function readyStartBtn(text, bgClass, hoverClass) {
+            const btn = document.getElementById('btn-start'); btn.disabled = false;
+            btn.className = `col-span-2 text-white font-bold py-3.5 rounded-2xl shadow-lg transition text-lg flex justify-center items-center gap-2 ${bgClass} ${hoverClass}`;
+            btn.innerHTML = `<i data-lucide="play" class="w-5 h-5"></i> ${text}`;
+            lucide.createIcons();
+        }
+
+        // ===== ระบบบันทึกข้อมูล =====
+        const SAVE_KEY = 'oshi_quiz_v7';
+        const SETTINGS_KEY = 'bnk48_settings_v1';
+        let soundOn = true, vibrateOn = true, audioCtx = null;
+
+        function getAudioCtx() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return null;
+                try { audioCtx = new AC(); } catch (e) { return null; }
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            return audioCtx;
+        }
+        document.addEventListener('pointerdown', () => { if (soundOn || musicOn) getAudioCtx(); if (musicOn) startMusic(); }, { passive: true });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) stopMusic(); else if (musicOn) startMusic(); });
+
+        function tone(freq, dur, type = 'sine', vol = 0.15, delay = 0, slideTo = null) {
+            if (!soundOn) return;
+            try {
+                const ctx = getAudioCtx(); if (!ctx) return;
+                const t = ctx.currentTime + delay;
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, t);
+                if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+                gain.gain.setValueAtTime(0.0001, t);
+                gain.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(t); osc.stop(t + dur + 0.02);
+            } catch (e) {}
+        }
+        function vibrate(pattern) {
+            if (!vibrateOn) return;
+            try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+        }
+
+        const SFX = {
+            correct() { tone(660, 0.12, 'triangle', 0.18); tone(880, 0.18, 'triangle', 0.18, 0.1); vibrate(30); },
+            combo() { [0, 4, 7, 12].forEach((st, i) => tone(523 * Math.pow(2, st / 12), 0.14, 'square', 0.09, i * 0.07)); vibrate([20, 30, 20, 30, 50]); },
+            wrong() { tone(220, 0.3, 'sawtooth', 0.14, 0, 110); vibrate([80, 40, 80]); },
+            timeout() { tone(300, 0.2, 'square', 0.1); tone(200, 0.35, 'square', 0.1, 0.18); vibrate([100, 50, 100]); },
+            shield() { tone(440, 0.1, 'sine', 0.15); tone(660, 0.25, 'sine', 0.15, 0.08); vibrate(40); },
+            upgrade() { tone(523, 0.1, 'triangle', 0.16); tone(659, 0.1, 'triangle', 0.16, 0.08); tone(880, 0.22, 'triangle', 0.18, 0.16); vibrate([30, 20, 50]); },
+            sell() { tone(784, 0.08, 'sine', 0.1); tone(1047, 0.15, 'sine', 0.15, 0.08); vibrate(20); },
+            sellAll() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.1, 'sine', 0.1, i * 0.05)); vibrate([30, 30, 50]); },
+            gameOver() { [392, 330, 262, 196].forEach((f, i) => tone(f, 0.25, 'triangle', 0.14, i * 0.18)); vibrate(200); },
+            spin() { for (let i = 0; i < 8; i++) tone(300 + (i % 2) * 120, 0.05, 'square', 0.05, i * 0.09); vibrate([40, 40, 40, 40, 40, 40, 40]); },
+            reveal(rarity) {
+                if (rarity === 'SSR') {
+                    [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.22, 'triangle', 0.15, i * 0.1));
+                    tone(1047, 0.8, 'sine', 0.1, 0.5); tone(1319, 0.8, 'sine', 0.08, 0.5);
+                    vibrate([100, 50, 100, 50, 250]);
+                } else if (rarity === 'SR') {
+                    [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, 'triangle', 0.14, i * 0.09));
+                    vibrate([60, 30, 60]);
+                } else if (rarity === 'R') {
+                    tone(523, 0.12, 'triangle', 0.14); tone(784, 0.2, 'triangle', 0.14, 0.1); vibrate(40);
+                } else {
+                    tone(440, 0.15, 'triangle', 0.13); vibrate(25);
+                }
+            }
+        };
+
+        // ===== เพลงพื้นหลัง =====
+        let musicOn = true, musicVol = 40, musicRunning = false, musicTimer = null, musicGain = null;
+        let musicStep = 0, nextNoteTime = 0, noiseBuf = null;
+        let timerPaused = false, pauseStart = 0;
+        const MUSIC_BPM = 108;
+        const STEP_DUR = 60 / MUSIC_BPM / 4;
+        const MUSIC_AHEAD = 0.6;
+        const midiToHz = m => 440 * Math.pow(2, (m - 69) / 12);
+
+        const CHORDS = [
+            { bass: 48, notes: [60, 64, 67] }, { bass: 43, notes: [59, 62, 67] },
+            { bass: 45, notes: [57, 60, 64] }, { bass: 41, notes: [57, 60, 65] },
+            { bass: 48, notes: [60, 64, 67] }, { bass: 43, notes: [59, 62, 67] },
+            { bass: 41, notes: [57, 60, 65] }, { bass: 43, notes: [59, 62, 67] }
+        ];
+        const MELODY = [
+            [[0,76,2],[2,74,2],[4,72,2],[6,74,2],[8,76,4],[12,79,4]],
+            [[0,79,2],[2,76,2],[4,74,4],[8,76,2],[10,74,2],[12,74,4]],
+            [[0,72,2],[2,76,2],[4,81,4],[8,79,2],[10,76,2],[12,72,4]],
+            [[0,74,2],[2,77,2],[4,81,4],[8,79,4],[12,77,4]],
+            [[0,76,2],[2,79,2],[4,76,2],[6,74,2],[8,72,4],[12,76,4]],
+            [[0,74,2],[2,79,2],[4,79,4],[8,74,2],[10,76,2],[12,74,4]],
+            [[0,81,2],[2,79,2],[4,77,4],[8,76,2],[10,77,2],[12,81,4]],
+            [[0,79,2],[2,77,2],[4,74,2],[6,76,2],[8,79,4],[12,74,4]]
+        ];
+
+        function ensureMusicGain(ctx) {
+            if (!musicGain || musicGain.context !== ctx) {
+                musicGain = ctx.createGain(); musicGain.gain.value = 0; musicGain.connect(ctx.destination);
+            }
+        }
+        function applyMusicVolume() {
+            if (!musicGain || !audioCtx) return;
+            musicGain.gain.setTargetAtTime(musicRunning ? musicVol / 100 : 0, audioCtx.currentTime, 0.05);
+        }
+        function mNote(freq, t, dur, type, vol) {
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator(); const g = ctx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, t);
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            osc.connect(g); g.connect(musicGain);
+            osc.start(t); osc.stop(t + dur + 0.02);
+        }
+        function mHat(t) {
+            const ctx = audioCtx;
+            if (!noiseBuf) {
+                const len = Math.floor(ctx.sampleRate * 0.05);
+                noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+                const d = noiseBuf.getChannelData(0);
+                for (let k = 0; k < len; k++) d[k] = Math.random() * 2 - 1;
+            }
+            const src = ctx.createBufferSource(); src.buffer = noiseBuf;
+            const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.03, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+            src.connect(hp); hp.connect(g); g.connect(musicGain);
+            src.start(t);
+        }
+        function mKick(t) {
+            const ctx = audioCtx;
+            const osc = ctx.createOscillator(); const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(120, t); osc.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+            g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+            osc.connect(g); g.connect(musicGain);
+            osc.start(t); osc.stop(t + 0.18);
+        }
+        function playMusicStep(step, t) {
+            const bar = Math.floor(step / 16), s = step % 16, ch = CHORDS[bar];
+            if (s === 0 || s === 8) mNote(midiToHz(ch.bass), t, 0.4, 'triangle', 0.16);
+            if (s === 12) mNote(midiToHz(ch.bass + 7), t, 0.25, 'triangle', 0.10);
+            if (s % 2 === 0) mNote(midiToHz(ch.notes[[0, 1, 2, 1, 0, 1, 2, 1][s / 2]]), t, 0.28, 'sine', 0.06);
+            for (const [st, m, len] of MELODY[bar]) {
+                if (st === s) {
+                    const f = midiToHz(m);
+                    mNote(f, t, Math.max(0.2, len * STEP_DUR * 1.1), 'triangle', 0.11);
+                    mNote(f * 2, t, 0.25, 'sine', 0.03);
+                }
+            }
+            if (s % 4 === 2) mHat(t);
+            if (s === 0 || s === 8) mKick(t);
+        }
+        function scheduleMusic() {
+            const ctx = audioCtx; if (!ctx || !musicRunning) return;
+            while (nextNoteTime < ctx.currentTime + MUSIC_AHEAD) {
+                playMusicStep(musicStep, nextNoteTime);
+                nextNoteTime += STEP_DUR;
+                musicStep = (musicStep + 1) % (CHORDS.length * 16);
+            }
+        }
+        function startMusic() {
+            if (!musicOn || musicRunning) return;
+            const ctx = getAudioCtx(); if (!ctx) return;
+            try {
+                ensureMusicGain(ctx);
+                musicRunning = true;
+                nextNoteTime = ctx.currentTime + 0.15;
+                applyMusicVolume();
+                scheduleMusic();
+                musicTimer = setInterval(scheduleMusic, 100);
+            } catch (e) { musicRunning = false; }
+        }
+        function stopMusic() {
+            musicRunning = false;
+            if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+            applyMusicVolume();
+        }
+
+        // ===== ตั้งค่า =====
+        function loadSettings() {
+            try {
+                const st = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+                soundOn = st.sound !== false; vibrateOn = st.vibrate !== false; musicOn = st.music !== false;
+                if (typeof st.musicVol === 'number') musicVol = Math.min(100, Math.max(0, st.musicVol));
+            } catch (e) {}
+            updateSettingButtons();
+        }
+        function saveSettings() {
+            try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ sound: soundOn, vibrate: vibrateOn, music: musicOn, musicVol })); } catch (e) {}
+        }
+        function setToggle(id, on) {
+            const b = document.getElementById(id); if (!b) return;
+            b.innerText = on ? 'เปิด' : 'ปิด';
+            b.className = 'px-3 py-1 rounded-full text-xs font-bold w-14 transition ' + (on ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-400');
+        }
+        function updateSettingButtons() {
+            setToggle('set-music', musicOn); setToggle('set-sound', soundOn); setToggle('set-vibrate', vibrateOn);
+            const sl = document.getElementById('music-volume'), lb = document.getElementById('music-volume-label');
+            if (sl) sl.value = musicVol; if (lb) lb.innerText = musicVol;
+        }
+        function toggleMusic() {
+            musicOn = !musicOn; saveSettings(); updateSettingButtons();
+            if (musicOn) { getAudioCtx(); startMusic(); } else stopMusic();
+        }
+        function setMusicVolume(v) {
+            musicVol = Math.min(100, Math.max(0, Number(v) || 0));
+            const lb = document.getElementById('music-volume-label'); if (lb) lb.innerText = musicVol;
+            saveSettings(); applyMusicVolume();
+        }
+        function toggleSound() { soundOn = !soundOn; saveSettings(); updateSettingButtons(); if (soundOn) tone(660, 0.12, 'triangle', 0.15); }
+        function toggleVibrate() { vibrateOn = !vibrateOn; saveSettings(); updateSettingButtons(); if (vibrateOn) vibrate(40); }
+
+        function showSettings() {
+            const inGame = document.getElementById('game-screen').classList.contains('active');
+            if (inGame && !questionAnswered && !timerPaused) { timerPaused = true; pauseStart = Date.now(); }
+            const note = document.getElementById('settings-pause-note');
+            if (note) note.classList.toggle('hidden', !timerPaused);
+            updateSettingButtons();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+            if (timerPaused) { questionDeadline += Date.now() - pauseStart; timerPaused = false; }
+        }
+
+        // ===== ระบบคอมโบ =====
+        function getComboMultiplier(n) {
+            if (n >= 8) return 1.5;
+            if (n >= 5) return 1.2;
+            if (n >= 3) return 1.1;
+            return 1;
+        }
+        function resetCombo() { combo = 0; updateComboDisplay(); }
+        function updateComboDisplay(pop) {
+            const el = document.getElementById('combo-display'); if (!el) return;
+            if (combo < 2) { el.classList.add('hidden'); return; }
+            const m = getComboMultiplier(combo);
+            el.innerHTML = `🔥 ${combo} ติด` + (m > 1 ? ` <span class="text-yellow-300">×${m}</span>` : '');
+            el.classList.remove('hidden');
+            if (pop) { el.classList.remove('combo-pop'); void el.offsetWidth; el.classList.add('combo-pop'); }
+        }
+
+        // ===== Popup ประกาศเกมแฟนเมด =====
+        const DISCLAIMER_KEY = 'bnk48_fanmade_ack_v1';
+        function showDisclaimer() { document.getElementById('disclaimer-modal').classList.remove('hidden'); }
+        function closeDisclaimer() {
+            document.getElementById('disclaimer-modal').classList.add('hidden');
+            try { localStorage.setItem(DISCLAIMER_KEY, '1'); } catch (e) {}
+        }
+        function initDisclaimer() {
+            let acked = false;
+            try { acked = localStorage.getItem(DISCLAIMER_KEY) === '1'; } catch (e) {}
+            if (!acked) showDisclaimer();
+        }
+
+        function getSaveObject() {
+            return { 
+                money, inventory, itemLevels, stats, unlockedOshis, selectedOshi, equippedItems, pity,
+                unlockedThemes, selectedTheme, unlockedFrames, selectedFrame, unlockedTitles, selectedTitle
+            };
+        }
+
+        function applySaveObject(data) {
+            money = Number(data.money) || 0;
+            inventory = (data.inventory && typeof data.inventory === 'object') ? data.inventory : {};
+            itemLevels = (data.itemLevels && typeof data.itemLevels === 'object') ? data.itemLevels : {};
+            stats = data.stats || { highscore: 0, totalCorrect: 0 };
+            unlockedOshis = Array.isArray(data.unlockedOshis) && data.unlockedOshis.length ? data.unlockedOshis : ['trainee'];
+            selectedOshi = (data.selectedOshi && oshisData[data.selectedOshi]) ? data.selectedOshi : 'trainee';
+            equippedItems = Array.isArray(data.equippedItems) ? data.equippedItems.filter(id => gachaPool.some(i => i.id === id)) : [];
+            const pp = data.pity || {};
+            pity = { sr: Math.max(0, parseInt(pp.sr) || 0), ssr: Math.max(0, parseInt(pp.ssr) || 0) };
+
+            unlockedThemes = Array.isArray(data.unlockedThemes) && data.unlockedThemes.length ? data.unlockedThemes : ['default'];
+            selectedTheme = unlockedThemes.includes(data.selectedTheme) ? data.selectedTheme : 'default';
+            unlockedFrames = Array.isArray(data.unlockedFrames) && data.unlockedFrames.length ? data.unlockedFrames : ['default'];
+            selectedFrame = unlockedFrames.includes(data.selectedFrame) ? data.selectedFrame : 'default';
+            unlockedTitles = Array.isArray(data.unlockedTitles) && data.unlockedTitles.length ? data.unlockedTitles : ['auto'];
+            selectedTitle = unlockedTitles.includes(data.selectedTitle) ? data.selectedTitle : 'auto';
+        }
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(SAVE_KEY);
+                if (saved) applySaveObject(JSON.parse(saved));
+            } catch (e) {
+                console.error("โหลดเซฟไม่ได้", e);
+            }
+            updateTopBar(); updateOshiBadge(); updateEquipBadge(); applyCosmetics();
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(SAVE_KEY, JSON.stringify(getSaveObject()));
+            } catch (e) {
+                console.error("บันทึกไม่ได้", e);
+            }
+            updateTopBar();
+        }
+
+        function exportSave() {
+            const json = JSON.stringify(getSaveObject());
+            const code = btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (m, p) => String.fromCharCode('0x' + p)));
+            prompt("คัดลอกรหัสนี้เก็บไว้ (Ctrl+C):", code);
+        }
+
+        function importSave() {
+            const code = prompt("วางรหัสเซฟที่นี่:");
+            if (!code) return;
+            try {
+                const json = decodeURIComponent(atob(code.trim()).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                const data = JSON.parse(json);
+                if (typeof data !== 'object' || data === null || !('money' in data)) throw new Error("รูปแบบไม่ถูกต้อง");
+                applySaveObject(data);
+                saveData(); updateOshiBadge(); updateEquipBadge(); applyCosmetics(); enterProfileScreen();
+                alert("โหลดเซฟสำเร็จ!");
+            } catch (e) {
+                alert("รหัสเซฟไม่ถูกต้อง");
+            }
+        }
+
+        function updateTopBar() { document.getElementById('money-display').innerHTML = `${money} <i data-lucide="sparkles" class="w-5 h-5"></i>`; lucide.createIcons(); }
+
+        function updateOshiBadge() {
+            const o = oshisData[selectedOshi];
+            document.getElementById('active-oshi-badge').innerText = o.name;
+            document.getElementById('active-oshi-badge').className = `absolute -bottom-3 text-white text-[11px] font-bold px-4 py-1 rounded-full border-2 border-gray-900 shadow-md ${o.color}`;
+            
+            const imgEl = document.getElementById('active-oshi-img');
+            const iconEl = document.getElementById('active-oshi-icon');
+            const profImgEl = document.getElementById('prof-oshi-img');
+            const profIconEl = document.getElementById('prof-oshi-icon');
+
+            if(o.img) { 
+                imgEl.src = o.img; imgEl.classList.remove('hidden'); iconEl.classList.add('hidden');
+                if (profImgEl) { profImgEl.src = o.img; profImgEl.classList.remove('hidden'); profIconEl.classList.add('hidden'); }
+            } else { 
+                imgEl.classList.add('hidden'); iconEl.classList.remove('hidden');
+                if (profImgEl) { profImgEl.classList.add('hidden'); profIconEl.classList.remove('hidden'); }
+            }
+        }
+        
+        function updateEquipBadge() {
+            const container = document.getElementById('active-equip-display');
+            if(equippedItems.length === 0) {
+                container.innerHTML = `<span class="text-[10px] bg-gray-800 text-gray-500 px-2 py-0.5 rounded border border-gray-700">กระเป๋าว่าง</span>`;
+                return;
+            }
+            container.innerHTML = '';
+            equippedItems.forEach(id => {
+                const item = gachaPool.find(i => i.id === id);
+                if (!item) return;
+                const lv = getItemLevel(id);
+                container.innerHTML += `<span class="text-[10px] bg-gray-800 text-white px-2 py-0.5 rounded border border-gray-600 flex items-center gap-1">${item.emoji} ${item.name} <b class="text-yellow-400">Lv.${lv}</b></span>`;
+            });
+        }
+
+        function shuffle(array) {
+            let curr = array.length, rand;
+            while (curr != 0) { rand = Math.floor(Math.random() * curr); curr--; [array[curr], array[rand]] = [array[rand], array[curr]]; }
+            return array;
+        }
+
+        // --- Core Game ---
+        function startGame() {
+            // ผสมคำถาม
+            questions = shuffle([...database, ...generateMemberQuestions(15)]); 
+            currentQ = 0; questionCounter = 1; score = 0; 
+            lives = (selectedOshi === 'rose') ? 4 : 3; maxTime = (selectedOshi === 'hoop') ? 15 : 10; hasShield = (selectedOshi === 'l');
+            activeScoreMultiplier = 1.0; activeBonusMoney = 0; correctThisRound = 0; prevHighscore = stats.highscore; combo = 0; bestComboRound = 0; updateComboDisplay();
+            
+            equippedItems.forEach(id => {
+                const item = gachaPool.find(i => i.id === id);
+                if (!item) return;
+                let isSynergy = (item.owner && item.owner === selectedOshi);
+                const lv = getItemLevel(id);
+                const bonusLv = lv - 1;
+
+                if(id === 1) activeScoreMultiplier += (0.10 + bonusLv * 0.05); 
+                if(id === 2) activeBonusMoney += (1 + Math.floor(bonusLv * 0.5)); 
+                if(id === 3) maxTime += (2 + bonusLv * 0.5); 
+                if(id === 4) maxTime += (1 + bonusLv * 0.5); 
+                if(id === 101) { activeScoreMultiplier += (0.15 + bonusLv * 0.05); if(isSynergy) lives += 1; }
+                if(id === 102) { activeScoreMultiplier += (0.15 + bonusLv * 0.05); if(isSynergy) maxTime += 5; }
+                if(id === 103) { activeBonusMoney += (3 + bonusLv * 1); if(isSynergy) activeScoreMultiplier += 0.30; }
+            });
+
+            document.getElementById('shield-display').style.display = hasShield ? 'block' : 'none';
+            updateLives(); document.getElementById('score-display').innerText = score;
+            switchScreen('game-screen'); loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQ >= questions.length) { 
+                questions = shuffle([...database, ...generateMemberQuestions(15)]); 
+                currentQ = 0; 
+            }
+            questionAnswered = false; const q = questions[currentQ];
+            document.getElementById('question-number').innerText = `ข้อที่ ${questionCounter}`;
+            document.getElementById('question-text').innerText = q.question;
+            document.getElementById('feedback-box').classList.add('translate-y-full');
+
+            const container = document.getElementById('options-container'); container.innerHTML = '';
+            let opts = shuffle(q.options.map((opt, i) => ({ text: opt, idx: i })));
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-medium py-4 px-6 rounded-xl text-left flex justify-between';
+                btn.innerHTML = `<span>${opt.text}</span><i data-lucide="circle" class="w-5 h-5 text-gray-500"></i>`;
+                btn.onclick = () => checkAnswer(opt.idx, q.answer, btn, opts, q.lore);
+                container.appendChild(btn);
+            });
+            lucide.createIcons(); startTimer(); 
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval); timeLeft = maxTime; questionDeadline = Date.now() + maxTime * 1000; timerPaused = false;
+            const bar = document.getElementById('timer-bar');
+            bar.style.width = '100%'; bar.className = 'h-full w-full bg-gradient-to-r from-green-400 to-emerald-500';
+
+            timerInterval = setInterval(() => {
+                if(questionAnswered) { clearInterval(timerInterval); return; }
+                if (timerPaused) return;
+                timeLeft = Math.max(0, (questionDeadline - Date.now()) / 1000); let percent = (timeLeft / maxTime) * 100;
+                bar.style.width = `${percent}%`;
+                
+                if(percent < 30) bar.className = 'h-full w-full bg-rose-500';
+                else if(percent < 60) bar.className = 'h-full w-full bg-yellow-400';
+
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleWrongAnswer("หมดเวลา! ⏰", "มัวแต่คิดนานไปหน่อยนะ รีบกดไปข้อต่อไปเลย!", true);
+                }
+            }, 100);
+        }
+
+        function checkAnswer(selIdx, correctIdx, btn, allOpts, lore) {
+            if (questionAnswered) return; questionAnswered = true; clearInterval(timerInterval);
+            const buttons = document.getElementById('options-container').children;
+            let corrBtnIdx = allOpts.findIndex(o => o.idx === correctIdx);
+            
+            if (selIdx === correctIdx) {
+                btn.classList.add('correct'); btn.innerHTML = btn.innerHTML.replace('circle', 'check-circle');
+                timeLeft = Math.max(0, (questionDeadline - Date.now()) / 1000);
+                let timeBonus = Math.floor(timeLeft * 2); 
+                let baseScore = 100 + timeBonus;
+                combo++; if (combo > bestComboRound) bestComboRound = combo;
+                const comboMult = getComboMultiplier(combo);
+                const gained = Math.floor(+(baseScore * activeScoreMultiplier * comboMult).toFixed(6));
+                score += gained; 
+                
+                stats.totalCorrect++; correctThisRound++; if(score > stats.highscore) stats.highscore = score;
+                document.getElementById('score-display').innerText = score;
+                updateComboDisplay(true);
+                showFeedback('correct', `ถูกต้อง! 🎉 +${gained}` + (combo >= 2 ? ` • 🔥 ${combo} ติด` + (comboMult > 1 ? ` ×${comboMult}` : '') : ''), lore);
+                if ([3, 5, 8].includes(combo)) SFX.combo(); else SFX.correct();
+            } else {
+                btn.classList.add('wrong'); btn.innerHTML = btn.innerHTML.replace('circle', 'x-circle');
+                buttons[corrBtnIdx].classList.add('correct');
+                handleWrongAnswer("ผิดจ้า! 😭", lore);
+            }
+            saveData(); applyCosmetics();
+        }
+
+        function handleWrongAnswer(title, lore, isTimeout) {
+            resetCombo();
+            questionAnswered = true;
+            if (hasShield) {
+                hasShield = false; document.getElementById('shield-display').style.display = 'none';
+                SFX.shield(); showFeedback('shield', "โล่ป้องกันทำงาน! 🛡️", "รอดตัวไปนะ ครั้งนี้หัวใจไม่ลด แต่ครั้งหน้าไม่มีแล้วนะ!");
+                return;
+            }
+            lives--; updateLives(); showFeedback('wrong', title, lore);
+            if (isTimeout) SFX.timeout(); else SFX.wrong();
+            if (lives <= 0) { 
+                document.getElementById('btn-next-question').innerText = "ดูคะแนนสรุปผล";
+                document.getElementById('btn-next-question').onclick = endGame;
+            }
+        }
+
+        function showFeedback(type, title, desc) {
+            const fbBox = document.getElementById('feedback-box');
+            if(type === 'correct') {
+                fbBox.classList.replace('border-rose-500', 'border-green-500'); fbBox.classList.replace('border-blue-500', 'border-green-500');
+                document.getElementById('feedback-title').innerHTML = `<span class='text-green-500'>${title}</span>`;
+            } else if (type === 'shield') {
+                fbBox.classList.replace('border-rose-500', 'border-blue-500'); fbBox.classList.replace('border-green-500', 'border-blue-500');
+                document.getElementById('feedback-title').innerHTML = `<span class='text-blue-400'>${title}</span>`;
+            } else {
+                fbBox.classList.replace('border-green-500', 'border-rose-500'); fbBox.classList.replace('border-blue-500', 'border-rose-500');
+                document.getElementById('feedback-title').innerHTML = `<span class='text-rose-500'>${title}</span>`;
+            }
+            document.getElementById('feedback-desc').innerText = desc; fbBox.classList.remove('translate-y-full');
+        }
+
+        function nextQuestion() { document.getElementById('feedback-box').classList.add('translate-y-full'); currentQ++; questionCounter++; loadQuestion(); }
+
+        function updateLives() {
+            let html = '';
+            for (let i = 0; i < lives; i++) html += `<i data-lucide="heart" class="w-6 h-6 text-rose-500 fill-rose-500"></i>`;
+            document.getElementById('lives-display').innerHTML = html; lucide.createIcons();
+        }
+
+        function endGame() {
+            document.getElementById('feedback-box').classList.add('translate-y-full');
+            document.getElementById('btn-next-question').innerHTML = `ไปข้อต่อไป <i data-lucide="arrow-right" class="inline w-4 h-4"></i>`;
+            document.getElementById('btn-next-question').onclick = nextQuestion;
+            document.getElementById('final-score').innerText = score;
+            const isNewRecord = score > prevHighscore;
+            document.getElementById('final-combo').innerText = bestComboRound >= 2 ? `${bestComboRound} ติด` : '-';
+            if (isNewRecord) SFX.reveal('SR'); else SFX.gameOver();
+            if (score > stats.highscore) stats.highscore = score;
+            document.getElementById('final-correct').innerText = `${correctThisRound} ข้อ`;
+            document.getElementById('final-highscore').innerText = stats.highscore;
+            document.getElementById('new-record-banner').classList.toggle('hidden', !isNewRecord);
+            
+            // เปลี่ยนอัตราส่วนเงินเป็น score / 100 ตาม Balance Patch และทวีคูณ activeBonusMoney ตามจำนวนข้อที่ตอบถูก
+            let earned = Math.floor(score / 100) + (activeBonusMoney * correctThisRound);
+            money += earned; saveData(); 
+            document.getElementById('earned-coins').innerHTML = `+${earned} <i data-lucide="sparkles" class="w-4 h-4"></i>`;
+            switchScreen('result-screen');
+        }
+
+        // --- System: Setup ---
+        function enterSetupScreen() { switchScreen('setup-screen'); renderSetupScreen(); }
+
+        function renderSetupScreen() {
+            const oshiContainer = document.getElementById('oshi-list'); oshiContainer.innerHTML = '';
+            Object.keys(oshisData).forEach(key => {
+                const o = oshisData[key]; const isUnlocked = unlockedOshis.includes(key); const isSelected = selectedOshi === key;
+                let btnHtml = isSelected ? `<button disabled class="bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-bold w-20">กำลังเล่น</button>`
+                            : isUnlocked ? `<button onclick="selectOshi('${key}')" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-xl text-xs font-bold w-20">เลือก</button>`
+                            : `<button disabled class="bg-gray-800 text-gray-600 px-3 py-2 rounded-xl text-xs font-bold w-20 flex justify-center"><i data-lucide="lock" class="w-3 h-3"></i></button>`;
+
+                let visual = o.img ? `<img src="${o.img}" onerror="this.outerHTML='<span>${o.name.charAt(0)}</span>'" class="w-full h-full object-cover rounded-full">` : `<i data-lucide="${o.icon}"></i>`;
+                
+                oshiContainer.innerHTML += `<div class="bg-gray-800 border ${isSelected ? 'border-green-500' : 'border-gray-700'} rounded-2xl p-3 flex items-center gap-3 ${!isUnlocked ? 'opacity-60 grayscale' : ''}"><div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${o.color}">${visual}</div><div class="flex-1"><h3 class="font-bold text-white text-sm leading-tight">${o.name}</h3><div class="text-[10px] text-gray-400 mt-1">${o.buff}</div></div>${btnHtml}</div>`;
+            });
+
+            const equipContainer = document.getElementById('equip-list'); equipContainer.innerHTML = '';
+            gachaPool.filter(c => c.type === 'equip').forEach(c => {
+                if (inventory[c.id] > 0) {
+                    const isEquipped = equippedItems.includes(c.id); const isFull = equippedItems.length >= 2;
+                    let isSynergyActive = isEquipped && c.owner && c.owner === selectedOshi;
+                    const lv = getItemLevel(c.id);
+                    
+                    let equipBtn = '';
+                    if (isEquipped) equipBtn = `<button onclick="toggleEquip(${c.id})" class="mt-2 w-full bg-red-600/80 hover:bg-red-500 text-white text-[10px] font-bold py-1.5 rounded-lg transition">ถอดออก</button>`;
+                    else if (!isFull) equipBtn = `<button onclick="toggleEquip(${c.id})" class="mt-2 w-full bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold py-1.5 rounded-lg transition">สวมใส่</button>`;
+                    else equipBtn = `<button disabled class="mt-2 w-full bg-gray-700 text-gray-500 text-[10px] font-bold py-1.5 rounded-lg opacity-50 cursor-not-allowed">เต็มแล้ว</button>`;
+
+                    let synHtml = c.synergyDesc ? `<div class="text-[9px] ${isSynergyActive ? 'text-green-400 font-bold' : 'text-gray-500'} mt-1 leading-tight">${isSynergyActive ? '✨ ' : ''}${c.synergyDesc}</div>` : '';
+
+                    equipContainer.innerHTML += `<div class="rounded-2xl p-3 text-center shadow-lg relative ${isEquipped ? 'bg-indigo-900/40 border-green-500' : c.bgClass} border-2 flex flex-col justify-between"><span class="absolute top-2 left-2 bg-purple-700 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">Lv.${lv}</span><div class="text-3xl mb-1">${c.emoji}</div><div class="text-[10px] font-bold opacity-80">${c.rarity}</div><div class="text-xs font-bold ${c.textClass} line-clamp-1 mb-1">${c.name}</div><div class="text-[9px] font-semibold ${isEquipped ? 'text-yellow-300' : 'text-gray-700'} leading-tight">${getItemBuffText(c.id, lv)}</div>${synHtml}${equipBtn}</div>`;
+                }
+            });
+            if(equipContainer.innerHTML === '') equipContainer.innerHTML = `<div class="col-span-2 text-center text-gray-500 text-sm py-4">คุณยังไม่มีไอเทม ไปหมุนตู้กาชากันเถอะ!</div>`;
+            lucide.createIcons();
+        }
+
+        function selectOshi(key) { selectedOshi = key; saveData(); updateOshiBadge(); renderSetupScreen(); }
+        function toggleEquip(id) {
+            if(equippedItems.includes(id)) equippedItems = equippedItems.filter(i => i !== id);
+            else if(equippedItems.length < 2) equippedItems.push(id);
+            saveData(); updateEquipBadge(); renderSetupScreen();
+        }
+
+        // --- Gacha ---
+        function enterGachaScreen() {
+            isPulling = false; switchScreen('gacha-screen'); updatePityInfo();
+            document.getElementById('gacha-result').classList.add('hidden', 'scale-0');
+            document.getElementById('gacha-multi-result').classList.add('hidden');
+            document.getElementById('gacha-machine').classList.remove('hidden'); 
+            updateGachaBtn();
+        }
+
+        function updateGachaBtn() {
+            if(isPulling) return;
+            document.getElementById('gacha-coin-balance').innerText = `${money} 🌟`;
+            
+            const btn1 = document.getElementById('btn-pull-1');
+            const btn10 = document.getElementById('btn-pull-10');
+            const btnAll = document.getElementById('btn-pull-all');
+            const btnAllText = document.getElementById('btn-pull-all-text');
+            const maxPulls = Math.floor(money / 10);
+
+            if (money >= 10) {
+                btn1.disabled = false;
+                btn1.className = "bg-yellow-500 hover:bg-yellow-400 text-yellow-950 font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex flex-col items-center justify-center active:scale-95";
+                btn1.innerHTML = `<span>หมุน 1 ครั้ง</span><span class="text-[10px] opacity-80">ใช้ 10 🌟</span>`;
+            } else {
+                btn1.disabled = true;
+                btn1.className = "bg-gray-700 text-gray-500 font-bold py-2.5 rounded-xl text-sm flex flex-col items-center justify-center cursor-not-allowed";
+                btn1.innerHTML = `<span>หมุน 1 ครั้ง</span><span class="text-[10px]">ขาด ${10 - money} 🌟</span>`;
+            }
+
+            if (money >= 100) {
+                btn10.disabled = false;
+                btn10.className = "bg-amber-500 hover:bg-amber-400 text-amber-950 font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex flex-col items-center justify-center active:scale-95";
+                btn10.innerHTML = `<span>หมุน 10 ครั้ง</span><span class="text-[10px] opacity-80">ใช้ 100 🌟</span>`;
+            } else {
+                btn10.disabled = true;
+                btn10.className = "bg-gray-700 text-gray-500 font-bold py-2.5 rounded-xl text-sm flex flex-col items-center justify-center cursor-not-allowed";
+                btn10.innerHTML = `<span>หมุน 10 ครั้ง</span><span class="text-[10px]">ใช้ 100 🌟</span>`;
+            }
+
+            if (maxPulls > 0) {
+                btnAll.disabled = false;
+                btnAll.className = "col-span-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold py-2.5 rounded-xl shadow-lg transition text-sm flex items-center justify-center gap-2 active:scale-95";
+                btnAllText.innerText = `สุ่มทั้งหมดที่มี (${maxPulls} ครั้ง • ใช้ ${maxPulls * 10} 🌟)`;
+            } else {
+                btnAll.disabled = true;
+                btnAll.className = "col-span-2 bg-gray-700 text-gray-500 font-bold py-2.5 rounded-xl text-sm flex items-center justify-center gap-2 cursor-not-allowed";
+                btnAllText.innerText = `สุ่มด้วยเงินทั้งหมดที่มี (เงินไม่พอ)`;
+            }
+            lucide.createIcons();
+        }
+
+        function confirmPullAll() {
+            const maxPulls = Math.floor(money / 10);
+            if (maxPulls <= 0 || isPulling) return;
+            const cost = maxPulls * 10;
+            document.getElementById('confirm-all-desc').innerHTML = `คุณต้องการใช้เงิน <b class="text-yellow-400">${cost} 🌟</b> เพื่อหมุนกาชารวดเดียว <b class="text-rose-400">${maxPulls} ครั้ง</b> เลยหรือไม่?`;
+            document.getElementById('confirm-all-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmAllModal() {
+            document.getElementById('confirm-all-modal').classList.add('hidden');
+        }
+
+        function executePullAll() {
+            closeConfirmAllModal();
+            const maxPulls = Math.floor(money / 10);
+            if (maxPulls > 0) pullGacha(maxPulls);
+        }
+
+        function rollGacha() {
+            pity.sr++; pity.ssr++;
+            let pool = gachaPool; let pityTriggered = null;
+            if (pity.ssr >= PITY_SSR) {
+                const ssrAll = gachaPool.filter(c => c.rarity === 'SSR');
+                const notOwned = ssrAll.filter(c => !unlockedOshis.includes(c.oshiId));
+                pool = notOwned.length ? notOwned : ssrAll;
+                pityTriggered = 'SSR';
+            } else if (pity.sr >= PITY_SR) {
+                pool = gachaPool.filter(c => c.rarity === 'SR' || c.rarity === 'SSR');
+                pityTriggered = 'SR';
+            }
+            let rand = Math.random() * pool.reduce((sum, c) => sum + c.weight, 0);
+            let pulled = pool[0];
+            for (const c of pool) { if (rand < c.weight) { pulled = c; break; } rand -= c.weight; }
+
+            if (pulled.rarity === 'SSR') { pity.sr = 0; pity.ssr = 0; }
+            else if (pulled.rarity === 'SR') { pity.sr = 0; }
+            return { pulled, pityTriggered };
+        }
+
+        function updatePityInfo() {
+            const el = document.getElementById('pity-info'); if (!el) return;
+            const srLeft = Math.max(0, PITY_SR - pity.sr);
+            const ssrLeft = Math.max(0, PITY_SSR - pity.ssr);
+            el.innerHTML = `การันตี SR+ ในอีก <b class="text-purple-300">${srLeft}</b> ครั้ง • SSR ในอีก <b class="text-yellow-300">${ssrLeft}</b> ครั้ง`;
+        }
+
+        function pullGacha(count = 1) {
+            const totalCost = count * 10;
+            if (money < totalCost || isPulling || count <= 0) return;
+            isPulling = true;
+            money -= totalCost;
+
+            const results = [];
+            let refundTotal = 0;
+            let newOshisUnlocked = [];
+            let highestRarity = 'N';
+            const rarityRank = { 'N': 1, 'R': 2, 'SR': 3, 'SSR': 4 };
+
+            for (let i = 0; i < count; i++) {
+                const { pulled, pityTriggered } = rollGacha();
+                const currCount = inventory[pulled.id] || 0;
+                inventory[pulled.id] = currCount + 1;
+                if (!itemLevels[pulled.id]) itemLevels[pulled.id] = 1;
+
+                if (rarityRank[pulled.rarity] > rarityRank[highestRarity]) {
+                    highestRarity = pulled.rarity;
+                }
+
+                let isNewOshi = false;
+                let refunded = 0;
+                if (pulled.type === 'unlock') {
+                    if (!unlockedOshis.includes(pulled.oshiId)) {
+                        unlockedOshis.push(pulled.oshiId);
+                        newOshisUnlocked.push(pulled.name);
+                        isNewOshi = true;
+                    } else {
+                        money += pulled.sell;
+                        refundTotal += pulled.sell;
+                        refunded = pulled.sell;
+                    }
+                }
+                results.push({ pulled, pityTriggered, currCount, isNewOshi, refunded });
+            }
+
+            saveData(); applyCosmetics();
+
+            ['btn-pull-1', 'btn-pull-10', 'btn-pull-all'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.disabled = true;
+            });
+            document.getElementById('gacha-coin-balance').innerText = `${money} 🌟`;
+
+            const machine = document.getElementById('gacha-machine');
+            document.getElementById('gacha-result').classList.add('hidden', 'scale-0');
+            document.getElementById('gacha-multi-result').classList.add('hidden');
+            machine.classList.remove('hidden'); machine.classList.add('gacha-shake');
+            SFX.spin();
+
+            setTimeout(() => {
+                machine.classList.remove('gacha-shake'); machine.classList.add('hidden');
+
+                if (count === 1) {
+                    const { pulled, pityTriggered, currCount, isNewOshi, refunded } = results[0];
+                    const resBox = document.getElementById('gacha-result');
+                    resBox.className = `w-full max-w-[270px] rounded-3xl p-5 border-4 text-center transform scale-0 transition-transform duration-500 shadow-2xl flex flex-col items-center justify-center ${pulled.bgClass} ${pulled.textClass}`;
+
+                    const imgContainer = document.getElementById('gacha-img-container');
+                    const imgEl = document.getElementById('gacha-image');
+                    const emojiFallback = document.getElementById('gacha-emoji-fallback');
+
+                    if (pulled.img) {
+                        imgEl.onerror = function() {
+                            this.classList.add('hidden');
+                            emojiFallback.innerText = pulled.emoji; emojiFallback.classList.remove('hidden');
+                            imgContainer.className = `w-20 h-20 mb-2 rounded-xl overflow-hidden flex items-center justify-center text-5xl`;
+                        };
+                        imgEl.src = pulled.img; imgEl.classList.remove('hidden'); emojiFallback.classList.add('hidden');
+                        imgContainer.className = `w-20 h-20 mb-2 rounded-xl overflow-hidden border-4 shadow-lg flex items-center justify-center text-4xl ${pulled.textClass.replace('text-', 'border-')}`;
+                    } else {
+                        imgEl.classList.add('hidden'); emojiFallback.innerText = pulled.emoji; emojiFallback.classList.remove('hidden');
+                        imgContainer.className = `w-20 h-20 mb-2 rounded-xl overflow-hidden flex items-center justify-center text-5xl`;
+                    }
+
+                    document.getElementById('gacha-rarity').innerText = pulled.rarity;
+                    document.getElementById('gacha-name').innerText = pulled.name;
+
+                    let buffText = pulled.type === 'equip' ? getItemBuffText(pulled.id) : pulled.buffDesc;
+                    if (pulled.synergyDesc) buffText += `<br><span class="text-[10px] text-purple-700 font-bold">${pulled.synergyDesc}</span>`;
+                    document.getElementById('gacha-buff').innerHTML = buffText;
+
+                    const badge = document.getElementById('gacha-duplicate-badge');
+                    if (pulled.type === 'equip') {
+                        if (currCount > 0) badge.innerHTML = `ได้ใบซ้ำ! (นำไปอัปเกรด หรือย่อยเป็น ${pulled.sell} 🌟)`;
+                        else badge.innerHTML = `⭐ ไอเทมใหม่ สวมใส่ได้เลย! ⭐`;
+                    } else {
+                        if (isNewOshi) badge.innerHTML = `<div class="text-rose-600 font-bold animate-pulse">🎉 ปลดล็อกตัวละครใหม่! 🎉</div>`;
+                        else badge.innerHTML = `<div class="text-amber-900 font-bold">มีเมมเบอร์นี้แล้ว คืนเงิน +${refunded} 🌟</div>`;
+                    }
+                    if (pityTriggered) {
+                        badge.innerHTML += `<div class="mt-1 text-[10px] text-green-800 font-bold">✨ การันตี ${pityTriggered}</div>`;
+                    }
+
+                    resBox.classList.remove('hidden'); void resBox.offsetWidth; resBox.classList.replace('scale-0', 'scale-100');
+                } else {
+                    const multiBox = document.getElementById('gacha-multi-result');
+                    const grid = document.getElementById('gacha-multi-grid');
+                    grid.innerHTML = '';
+
+                    document.getElementById('multi-result-title').innerText = `ผลการสุ่ม ${count} ครั้ง`;
+                    let summaryTxt = refundTotal > 0 ? `คืนเงินเมมเบอร์ซ้ำ +${refundTotal} 🌟` : `ได้รับไอเทมเข้าสมุดสะสม`;
+                    document.getElementById('multi-result-summary').innerText = summaryTxt;
+
+                    if (count > 30) {
+                        const grouped = {};
+                        results.forEach(r => {
+                            const id = r.pulled.id;
+                            if (!grouped[id]) grouped[id] = { card: r.pulled, qty: 0, newOshi: false };
+                            grouped[id].qty++;
+                            if (r.isNewOshi) grouped[id].newOshi = true;
+                        });
+                        Object.values(grouped).sort((a, b) => rarityRank[b.card.rarity] - rarityRank[a.card.rarity]).forEach(g => {
+                            const c = g.card;
+                            const visual = c.img ? `<img src="${c.img}" onerror="this.outerHTML='<div class=\\'text-2xl\\'>${c.emoji}</div>'" class="w-10 h-10 object-cover rounded-md mx-auto mb-1">` : `<div class="text-2xl mb-0.5">${c.emoji}</div>`;
+                            grid.innerHTML += `
+                                <div class="rounded-xl p-2 text-center relative border ${c.bgClass} ${c.textClass} flex flex-col items-center justify-center shadow">
+                                    <span class="absolute top-1 right-1 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">x${g.qty}</span>
+                                    ${visual}
+                                    <div class="text-[9px] font-bold opacity-75">${c.rarity}</div>
+                                    <div class="text-[10px] font-bold line-clamp-1 leading-tight">${c.name}</div>
+                                    ${g.newOshi ? `<span class="text-[8px] bg-rose-600 text-white px-1 rounded mt-0.5">NEW!</span>` : ''}
+                                </div>`;
+                        });
+                    } else {
+                        results.forEach(r => {
+                            const c = r.pulled;
+                            const visual = c.img ? `<img src="${c.img}" onerror="this.outerHTML='<div class=\\'text-2xl\\'>${c.emoji}</div>'" class="w-9 h-9 object-cover rounded-md mx-auto mb-0.5">` : `<div class="text-2xl mb-0.5">${c.emoji}</div>`;
+                            let tag = '';
+                            if (r.isNewOshi) tag = `<span class="text-[8px] bg-rose-600 text-white px-1 rounded">ปลดล็อก!</span>`;
+                            else if (r.refunded > 0) tag = `<span class="text-[8px] bg-yellow-900 text-yellow-200 px-1 rounded">+${r.refunded}🌟</span>`;
+                            else if (r.currCount === 0) tag = `<span class="text-[8px] bg-green-700 text-white px-1 rounded">ใหม่!</span>`;
+
+                            grid.innerHTML += `
+                                <div class="rounded-xl p-1.5 text-center relative border ${c.bgClass} ${c.textClass} flex flex-col items-center justify-between shadow">
+                                    ${visual}
+                                    <div class="text-[8px] font-bold opacity-75">${c.rarity}</div>
+                                    <div class="text-[9px] font-bold line-clamp-1 leading-tight mb-0.5">${c.name}</div>
+                                    ${tag}
+                                </div>`;
+                        });
+                    }
+
+                    multiBox.classList.remove('hidden');
+                }
+
+                SFX.reveal(highestRarity);
+                isPulling = false; updateGachaBtn(); updatePityInfo();
+            }, 800);
+        }
+
+        // --- System: Collection & Upgrade ---
+        function enterCollectionScreen() { switchScreen('collection-screen'); renderCollection(); }
+        function renderCollection() {
+            document.getElementById('col-money').innerText = money;
+            const grid = document.getElementById('collection-grid'); grid.innerHTML = '';
+            gachaPool.forEach(c => {
+                const count = inventory[c.id] || 0;
+                if (count > 0) {
+                    const isEquipped = equippedItems.includes(c.id);
+                    const lv = getItemLevel(c.id);
+                    let actionBtnsHtml = '';
+
+                    if (c.type === 'equip') {
+                        let upgBtn = '';
+                        if (lv >= MAX_ITEM_LEVEL) {
+                            upgBtn = `<button disabled class="w-full bg-amber-600/40 text-amber-900 border border-amber-600/50 text-[10px] font-bold py-1 rounded-lg cursor-not-allowed">⭐ เลเวลสูงสุด</button>`;
+                        } else if (count >= 4) {
+                            upgBtn = `<button onclick="upgradeItem(${c.id})" class="w-full bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold py-1.5 rounded-lg transition shadow-md active:scale-95">⬆️ อัปเกรด Lv.${lv+1} (ใช้ 3 ใบซ้ำ)</button>`;
+                        } else {
+                            const needed = 4 - count;
+                            upgBtn = `<button disabled class="w-full bg-gray-700/60 text-gray-400 text-[10px] font-bold py-1 rounded-lg opacity-60 cursor-not-allowed">หาอีก ${needed} ใบเพื่ออัปเกรด</button>`;
+                        }
+
+                        let sellBtn = '';
+                        if (count > 1) {
+                            sellBtn = `<button onclick="sellItem(${c.id})" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold py-1 rounded-lg transition shadow-md active:scale-95">ย่อย 1 ใบ (+${c.sell}🌟)</button>`;
+                        } else {
+                            sellBtn = `<button disabled class="w-full bg-gray-700 text-gray-500 text-[10px] font-bold py-1 rounded-lg opacity-50 cursor-not-allowed">เก็บไว้ 1 ใบ${isEquipped ? ' (ใส่อยู่)' : ''}</button>`;
+                        }
+
+                        actionBtnsHtml = `<div class="mt-2 flex flex-col gap-1 w-full">${upgBtn}${sellBtn}</div>`;
+                    } else {
+                        actionBtnsHtml = `<button disabled class="mt-2 w-full bg-yellow-900/50 text-yellow-950 border border-yellow-700/60 text-[10px] font-bold py-1.5 rounded-lg">เมมเบอร์ (ซ้ำได้เงินคืน)</button>`;
+                    }
+
+                    let visual = c.img ? `<img src="${c.img}" onerror="this.outerHTML='<div class=\\'text-4xl mb-1\\'>${c.emoji}</div>'" class="w-12 h-12 object-cover rounded-md mb-1 mx-auto shadow-sm border border-black/20">` : `<div class="text-3xl mb-1">${c.emoji}</div>`;
+                    let lvBadge = c.type === 'equip' ? `<span class="absolute top-2 left-2 bg-purple-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow">Lv.${lv}</span>` : '';
+                    let buffInfo = c.type === 'equip' ? `<div class="text-[10px] font-semibold opacity-90 mt-0.5">${getItemBuffText(c.id, lv)}</div>` : `<div class="text-[9px] opacity-80 mt-0.5">${c.buffDesc}</div>`;
+
+                    grid.innerHTML += `
+                        <div class="rounded-2xl p-3 text-center shadow-lg relative ${c.bgClass} ${c.textClass} border-2 flex flex-col justify-between">
+                            ${lvBadge}
+                            <span class="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">x${count}</span>
+                            <div>
+                                ${visual}
+                                <div class="text-[9px] font-bold opacity-75">${c.rarity}</div>
+                                <div class="text-xs font-bold line-clamp-1">${c.name}</div>
+                                ${buffInfo}
+                            </div>
+                            ${actionBtnsHtml}
+                        </div>`;
+                } else {
+                    grid.innerHTML += `<div class="rounded-2xl p-4 text-center bg-gray-800 border-2 border-gray-700 opacity-50 flex flex-col items-center justify-center"><div class="text-4xl mb-2 grayscale">❓</div><div class="text-xs font-bold text-gray-500">ยังไม่มี</div></div>`;
+                }
+            });
+        }
+
+        function upgradeItem(id) {
+            const item = gachaPool.find(x => x.id === id);
+            if (!item || item.type !== 'equip') return;
+            const lv = getItemLevel(id);
+            if ((inventory[id] || 0) >= 4 && lv < MAX_ITEM_LEVEL) {
+                inventory[id] -= 3;
+                itemLevels[id] = lv + 1;
+                SFX.upgrade();
+                saveData();
+                updateEquipBadge();
+                renderCollection();
+            }
+        }
+
+        function sellItem(id) {
+            if(inventory[id] && inventory[id] > 1) {
+                inventory[id]--;
+                let item = gachaPool.find(x => x.id === id);
+                money += item.sell;
+                SFX.sell();
+                saveData();
+                renderCollection();
+            }
+        }
+
+        function sellAllDuplicates() {
+            let totalEarned = 0;
+            let soldAny = false;
+            gachaPool.forEach(c => {
+                if (c.type === 'equip') {
+                    const count = inventory[c.id] || 0;
+                    if (count > 1) {
+                        const sellCount = count - 1;
+                        inventory[c.id] = 1;
+                        totalEarned += (c.sell * sellCount);
+                        soldAny = true;
+                    }
+                }
+            });
+            if (soldAny) {
+                money += totalEarned;
+                SFX.sellAll();
+                saveData();
+                renderCollection();
+                alert(`ขายไอเทมซ้ำทั้งหมดเรียบร้อยแล้ว!\nได้รับเงินรวม +${totalEarned} 🌟`);
+            } else {
+                alert("ไม่มีไอเทมซ้ำที่สามารถขายได้เลย (ต้องมีมากกว่า 1 ใบ)");
+            }
+        }
+
+        // --- System: Shop & Cosmetics Boutique ---
+        function enterShopScreen() { switchScreen('shop-screen'); renderShop(); }
+        
+        function switchShopTab(tab) {
+            currentShopTab = tab;
+            const btnCards = document.getElementById('tab-shop-cards');
+            const btnCos = document.getElementById('tab-shop-cosmetics');
+            if (tab === 'cards') {
+                btnCards.className = "py-2 rounded-lg text-xs font-bold transition bg-cyan-600 text-white shadow";
+                btnCos.className = "py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white";
+            } else {
+                btnCos.className = "py-2 rounded-lg text-xs font-bold transition bg-pink-600 text-white shadow";
+                btnCards.className = "py-2 rounded-lg text-xs font-bold transition text-gray-400 hover:text-white";
+            }
+            renderShop();
+        }
+
+        function renderShop() {
+            document.getElementById('shop-money').innerText = money;
+            const shopContainer = document.getElementById('shop-items'); shopContainer.innerHTML = '';
+            
+            if (currentShopTab === 'cards') {
+                const shopItems = gachaPool.filter(c => c.rarity === 'SR' || c.rarity === 'SSR');
+                shopItems.forEach(c => {
+                    let isOwned = false;
+                    if(c.type === 'unlock' && unlockedOshis.includes(c.oshiId)) isOwned = true;
+                    
+                    let btnHtml = '';
+                    if(isOwned) {
+                        btnHtml = `<button disabled class="bg-green-900/50 text-green-400 px-4 py-2 rounded-xl font-bold border border-green-700 text-xs min-w-[80px]">มีแล้ว</button>`;
+                    } else {
+                        let shopCost = c.rarity === 'SR' ? 80 : 300; 
+                        const canBuy = money >= shopCost;
+                        const btnClass = canBuy ? "bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-900/50" : "bg-gray-700 text-gray-500 cursor-not-allowed";
+                        btnHtml = `<button onclick="${canBuy ? `buyShopItem(${c.id},${shopCost})` : ''}" class="${btnClass} px-3 py-2 rounded-xl font-bold transition flex flex-col items-center shadow-lg min-w-[80px]"><span class="text-[10px]">ซื้อ</span><span class="text-sm flex items-center gap-1">${shopCost}<i data-lucide="sparkles" class="w-3 h-3"></i></span></button>`;
+                    }
+                    
+                    let visual = c.img ? `<img src="${c.img}" onerror="this.outerHTML='<div class=\\'text-2xl\\'>${c.emoji}</div>'" class="w-full h-full object-cover rounded-xl">` : `<div class="text-2xl">${c.emoji}</div>`;
+
+                    shopContainer.innerHTML += `
+                        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-3.5 flex items-center gap-3.5 shadow-lg ${isOwned ? 'opacity-60' : ''}">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center border-2 shadow-sm shrink-0 ${c.bgClass}">${visual}</div>
+                            <div class="flex-1">
+                                <div class="text-[10px] font-bold text-gray-400 mb-0.5">${c.type === 'unlock' ? 'บัตรเชิญเข้าทีม' : 'ไอเทมระดับ ' + c.rarity}</div>
+                                <h3 class="font-bold text-white text-sm leading-tight">${c.name}</h3>
+                            </div>
+                            ${btnHtml}
+                        </div>`;
+                });
+            } else {
+                const sections = [
+                    { title: '🎨 ธีมสีพื้นหลังเว็บ (Stage Themes)', cat: 'theme', list: cosmeticsCatalog.themes, unlocked: unlockedThemes, selected: selectedTheme },
+                    { title: '🖼️ กรอบรูปโปรไฟล์ (Avatar Frames)', cat: 'frame', list: cosmeticsCatalog.frames, unlocked: unlockedFrames, selected: selectedFrame },
+                    { title: '🏷️ ป้ายฉายาพิเศษ (Custom Titles)', cat: 'title', list: cosmeticsCatalog.titles, unlocked: unlockedTitles, selected: selectedTitle }
+                ];
+
+                sections.forEach(sec => {
+                    shopContainer.innerHTML += `<div class="text-xs font-bold text-pink-300 mt-2 mb-1">${sec.title}</div>`;
+                    sec.list.filter(item => item.cost > 0).forEach(item => {
+                        const isOwned = sec.unlocked.includes(item.id);
+                        const isEquipped = sec.selected === item.id;
+                        let btnHtml = '';
+
+                        if (isEquipped) {
+                            btnHtml = `<button disabled class="bg-green-600 text-white px-3 py-2 rounded-xl font-bold text-xs min-w-[80px]">ใส่อยู่</button>`;
+                        } else if (isOwned) {
+                            btnHtml = `<button onclick="equipCosmetic('${sec.cat}','${item.id}')" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-xl font-bold text-xs min-w-[80px] transition">สวมใส่</button>`;
+                        } else {
+                            const canBuy = money >= item.cost;
+                            const btnClass = canBuy ? "bg-pink-600 hover:bg-pink-500 text-white" : "bg-gray-700 text-gray-500 cursor-not-allowed";
+                            btnHtml = `<button onclick="${canBuy ? `buyCosmetic('${sec.cat}','${item.id}',${item.cost})` : ''}" class="${btnClass} px-3 py-2 rounded-xl font-bold transition flex flex-col items-center shadow-lg min-w-[80px]"><span class="text-[10px]">ซื้อ</span><span class="text-sm flex items-center gap-1">${item.cost}<i data-lucide="sparkles" class="w-3 h-3"></i></span></button>`;
+                        }
+
+                        shopContainer.innerHTML += `
+                            <div class="bg-gray-800 border ${isEquipped ? 'border-green-500' : 'border-gray-700'} rounded-2xl p-3 flex items-center gap-3 shadow-lg">
+                                <div class="w-11 h-11 rounded-xl bg-gray-900 border border-gray-700 flex items-center justify-center text-xl shrink-0">${item.emoji}</div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-white text-xs leading-tight">${item.name}</h3>
+                                    <span class="text-[10px] text-gray-400">${isOwned ? 'ปลดล็อกแล้ว' : 'ของตกแต่งพิเศษ'}</span>
+                                </div>
+                                ${btnHtml}
+                            </div>`;
+                    });
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function buyShopItem(id, cost) {
+            if(money >= cost) {
+                money -= cost;
+                let item = gachaPool.find(x => x.id === id);
+                inventory[item.id] = (inventory[item.id] || 0) + 1;
+                if (!itemLevels[item.id]) itemLevels[item.id] = 1;
+                if (item.type === 'unlock') {
+                    if (!unlockedOshis.includes(item.oshiId)) unlockedOshis.push(item.oshiId);
+                    alert(`จ้างงาน ${item.name} สำเร็จ! ไปจัดทีมเพื่อใช้งานได้เลย`);
+                } else {
+                    alert(`ซื้อ ${item.name} สำเร็จแล้ว! สวมใส่หรือนำไปอัปเกรดได้เลย`);
+                }
+                SFX.upgrade(); saveData(); applyCosmetics(); renderShop();
+            }
+        }
+
+        function buyCosmetic(cat, id, cost) {
+            if (money < cost) return;
+            money -= cost;
+            if (cat === 'theme' && !unlockedThemes.includes(id)) { unlockedThemes.push(id); selectedTheme = id; }
+            if (cat === 'frame' && !unlockedFrames.includes(id)) { unlockedFrames.push(id); selectedFrame = id; }
+            if (cat === 'title' && !unlockedTitles.includes(id)) { unlockedTitles.push(id); selectedTitle = id; }
+            SFX.upgrade(); saveData(); applyCosmetics(); renderShop();
+        }
+
+        function equipCosmetic(cat, id) {
+            if (cat === 'theme' && unlockedThemes.includes(id)) selectedTheme = id;
+            if (cat === 'frame' && unlockedFrames.includes(id)) selectedFrame = id;
+            if (cat === 'title' && unlockedTitles.includes(id)) selectedTitle = id;
+            SFX.correct(); saveData(); applyCosmetics();
+            if (document.getElementById('shop-screen').classList.contains('active')) renderShop();
+            if (document.getElementById('profile-screen').classList.contains('active')) renderProfileCosmetics();
+        }
+
+        // --- System: โปรไฟล์ & ตกแต่ง ---
+        function enterProfileScreen() {
+            switchScreen('profile-screen');
+            document.getElementById('stat-highscore').innerText = stats.highscore;
+            document.getElementById('stat-correct').innerText = `${stats.totalCorrect} ข้อ`;
+            
+            let uniqueCount = 0; gachaPool.forEach(c => { if(inventory[c.id] > 0) uniqueCount++; });
+            document.getElementById('stat-collection').innerText = `${uniqueCount}/${gachaPool.length}`;
+            
+            let level = Math.floor(stats.totalCorrect / 10) + 1;
+            document.getElementById('prof-level').innerText = level;
+            
+            updateOshiBadge();
+            applyCosmetics();
+            renderProfileCosmetics();
+        }
+
+        function renderProfileCosmetics() {
+            const tBox = document.getElementById('prof-themes-list'); tBox.innerHTML = '';
+            cosmeticsCatalog.themes.forEach(t => {
+                const owned = unlockedThemes.includes(t.id);
+                const active = selectedTheme === t.id;
+                tBox.innerHTML += `
+                    <button ${owned ? `onclick="equipCosmetic('theme','${t.id}')"` : 'disabled'} class="p-2 rounded-xl border text-left text-[10px] font-bold flex items-center gap-1.5 transition ${active ? 'border-green-400 bg-green-950/40 text-white' : owned ? 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500' : 'border-gray-800 bg-gray-900/40 text-gray-600 cursor-not-allowed'}">
+                        <span>${t.emoji}</span><span class="truncate flex-1">${t.name}</span>${active ? '<span class="text-green-400">✓</span>' : !owned ? '<span>🔒</span>' : ''}
+                    </button>`;
+            });
+
+            const fBox = document.getElementById('prof-frames-list'); fBox.innerHTML = '';
+            cosmeticsCatalog.frames.forEach(f => {
+                const owned = unlockedFrames.includes(f.id);
+                const active = selectedFrame === f.id;
+                fBox.innerHTML += `
+                    <button ${owned ? `onclick="equipCosmetic('frame','${f.id}')"` : 'disabled'} class="p-2 rounded-xl border text-left text-[10px] font-bold flex items-center gap-1.5 transition ${active ? 'border-green-400 bg-green-950/40 text-white' : owned ? 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500' : 'border-gray-800 bg-gray-900/40 text-gray-600 cursor-not-allowed'}">
+                        <span>${f.emoji}</span><span class="truncate flex-1">${f.name}</span>${active ? '<span class="text-green-400">✓</span>' : !owned ? '<span>🔒</span>' : ''}
+                    </button>`;
+            });
+
+            const titleBox = document.getElementById('prof-titles-list'); titleBox.innerHTML = '';
+            cosmeticsCatalog.titles.forEach(t => {
+                const owned = unlockedTitles.includes(t.id);
+                const active = selectedTitle === t.id;
+                const label = t.id === 'auto' ? `🎖️ ฉายาตามเลเวล (${getAutoTitle()})` : t.name;
+                titleBox.innerHTML += `
+                    <button ${owned ? `onclick="equipCosmetic('title','${t.id}')"` : 'disabled'} class="p-2 rounded-xl border text-left text-[11px] font-bold flex items-center justify-between transition ${active ? 'border-green-400 bg-green-950/40 text-white' : owned ? 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-500' : 'border-gray-800 bg-gray-900/40 text-gray-600 cursor-not-allowed'}">
+                        <span class="truncate">${label}</span>${active ? '<span class="text-green-400 text-xs">กำลังใช้ ✓</span>' : !owned ? '<span class="text-[10px]">🔒 ซื้อที่ร้านค้า</span>' : ''}
+                    </button>`;
+            });
+        }
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            lucide.createIcons();
+        }
+
+        window.onload = () => {
+            try { lucide.createIcons(); } catch (e) {}
+            loadSettings();
+            initDisclaimer();
+            loadData();
+            loadQuestionsFromSheet();
+        };
+    </script>
+</body>
+</html>
